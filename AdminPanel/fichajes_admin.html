@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script
+            src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <title>Panel de Fichajes - Admin</title>
+        <style>
+    * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    }
+
+    body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    }
+
+    .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    }
+
+    .header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    }
+
+    .controls {
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+    display: flex;
+    gap: 20px;
+    align-items: end;
+    flex-wrap: wrap;
+    }
+
+    .form-field {
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+    }
+
+    .form-field label {
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #555;
+    }
+
+    .form-field input,
+    .form-field select {
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+    }
+
+    .btn {
+    padding: 12px 25px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .table-container {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .table-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    }
+
+    table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    }
+
+    th, td {
+    padding: 8px 6px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+    }
+
+    th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #555;
+    position: sticky;
+    top: 0;
+    font-size: 11px;
+    }
+
+    tr:hover {
+    background-color: #f8f9fa;
+    }
+
+    .employee-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-align: left;
+    }
+
+    .employee-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #667eea;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    }
+
+    .employee-name {
+    font-weight: 600;
+    color: #333;
+    }
+
+    .time-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin: 2px;
+    }
+
+    .time-programmed {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border: 1px solid #bbdefb;
+    }
+
+    .time-worked {
+    background-color: #e8f5e8;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+    }
+
+    .time-break {
+    background-color: #fff3e0;
+    color: #f57c00;
+    border: 1px solid #ffcc02;
+    }
+
+    .status-confirmed {
+    color: #4caf50;
+    font-weight: bold;
+    }
+
+    .status-pending {
+    color: #ff9800;
+    font-weight: bold;
+    }
+
+    .duration-badge {
+    background-color: #f5f5f5;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-weight: 600;
+    }
+
+    .no-data {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-style: italic;
+    }
+
+    .loading {
+    text-align: center;
+    padding: 40px;
+    color: #667eea;
+    }
+
+    .checkbox-cell {
+    width: 40px;
+    }
+
+    .actions-cell {
+    width: 80px;
+    }
+
+    .btn-small {
+    padding: 4px 8px;
+    font-size: 11px;
+    margin: 1px;
+    }
+
+    .btn-edit {
+    background: #ffc107;
+    color: #000;
+    }
+
+    .btn-delete {
+    background: #dc3545;
+    color: white;
+    }
+
+    .summary-stats {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    }
+
+    .stat-card {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    min-width: 150px;
+    text-align: center;
+    }
+
+    .stat-value {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #667eea;
+    }
+
+    .stat-label {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 5px;
+    }
+
+    @media (max-width: 1200px) {
+    .container {
+    padding: 10px;
+    }
+
+    table {
+    font-size: 10px;
+    }
+
+    th, td {
+    padding: 4px 2px;
+    }
+    }
+    </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>📊 Panel de Fichajes</h1>
+                <p>Gestión y visualización de registros de entrada y salida de
+                    empleados</p>
+            </div>
+
+            <div class="controls">
+                <h3>🔍 Filtros de Búsqueda</h3>
+                <div class="form-group">
+                    <div class="form-field">
+                        <label for="fecha_inicio">Fecha Inicio:</label>
+                        <input type="date" id="fecha_inicio"
+                            name="fecha_inicio">
+                    </div>
+                    <div class="form-field">
+                        <label for="fecha_fin">Fecha Fin:</label>
+                        <input type="date" id="fecha_fin" name="fecha_fin">
+                    </div>
+                    <div class="form-field">
+                        <label for="empleado">Empleado:</label>
+                        <select id="empleado" name="empleado">
+                            <option value>Todos los empleados</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="cargarFichajes()">🔍 Buscar
+                        Fichajes</button>
+                    <button class="btn" onclick="exportarDatos()"
+                        style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">📊
+                        Exportar</button>
+                </div>
+            </div>
+
+            <!-- Estadísticas resumen -->
+            <div id="summaryStats" class="summary-stats" style="display: none;">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalEmpleados">0</div>
+                    <div class="stat-label">Empleados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="horasProgramadas">0h</div>
+                    <div class="stat-label">Horas Programadas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="horasTrabajadas">0h</div>
+                    <div class="stat-label">Horas Trabajadas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="eficiencia">0%</div>
+                    <div class="stat-label">Eficiencia</div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <h3>📋 Registros de Fichajes y Horarios</h3>
+                </div>
+                <div id="tablaContainer">
+                    <div class="no-data">
+                        <p>Selecciona un rango de fechas para ver los
+                            fichajes</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+    // Obtener la tienda del usuario desde la cookie
+    const usuarioTienda = Cookies.get('usuarioTienda') || '1';
+    console.log('Usuario Tienda desde cookie:', usuarioTienda);
+
+    // Set today's date as default
+    const today = new Date();
+    document.getElementById('fecha_inicio').valueAsDate = today;
+    document.getElementById('fecha_fin').valueAsDate = today;
+
+    // Global variables
+    let empleados = [];
+    let fichajesData = [];
+
+    // Initialize the application
+    $(document).ready(function() {
+    cargarEmpleados();
+    cargarFichajes();
+    });
+
+    // Load employees from database
+    function cargarEmpleados() {
+    var operacion = {
+    tipo_operacion: "get_empleados",
+    tienda: usuarioTienda
+    };
+
+    $.ajax({
+    url: "./App/FuncionesBD.php",
+    type: 'POST',
+    data: operacion,
+    success: function (response) {
+    try {
+    var data = JSON.parse(response);
+    if (Array.isArray(data) && data.length > 0) {
+    empleados = data;
+    const select = document.getElementById('empleado');
+    select.innerHTML = '<option value="">Todos los empleados</option>';
+
+    empleados.forEach(emp => {
+    const option = document.createElement('option');
+    option.value = emp.US_ID;
+    option.textContent = emp.US_Name;
+    select.appendChild(option);
+    });
+    }
+    } catch (error) {
+    console.error('Error parsing employees data:', error);
+    }
+    },
+    error: function(xhr, status, error) {
+    console.error('Error loading employees:', error);
+    }
+    });
+    }
+
+    // Load fichajes data with business hours using the new function
+    function cargarFichajes() {
+    const fechaInicio = document.getElementById('fecha_inicio').value;
+    const fechaFin = document.getElementById('fecha_fin').value;
+    const empleadoId = document.getElementById('empleado').value;
+
+    if (!fechaInicio || !fechaFin) {
+    mostrarMensaje('Por favor selecciona las fechas de inicio y fin');
+    return;
+    }
+
+    mostrarCargando();
+
+    // Usar la nueva función get_empleados_fichajes
+    var operacion = {
+    tipo_operacion: "get_empleados_fichajes",
+    tienda: usuarioTienda,
+    fecha_inicio: fechaInicio,
+    fecha_fin: fechaFin,
+    empleado_id: empleadoId || null
+    };
+
+    $.ajax({
+    url: "./App/FuncionesBD.php",
+    type: 'POST',
+    data: operacion,
+    success: function (response) {
+    try {
+    console.log('Response from server:', response);
+    var data = JSON.parse(response);
+
+    if (data.error) {
+    mostrarMensaje('Error: ' + data.error);
+    return;
+    }
+
+    if (Array.isArray(data) && data.length > 0) {
+    fichajesData = data;
+    mostrarFichajesCompletos(data, fechaInicio, fechaFin);
+    mostrarEstadisticas(data);
+    } else {
+    mostrarMensaje('No se encontraron datos para el rango de fechas seleccionado');
+    }
+    } catch (error) {
+    console.error('Error parsing fichajes data:', error);
+    mostrarMensaje('Error al procesar los datos del servidor');
+    }
+    },
+    error: function(xhr, status, error) {
+    console.error('Error loading fichajes:', error);
+    mostrarMensaje('Error al cargar los datos: ' + error);
+    }
+    });
+    }
+
+    function mostrarEstadisticas(data) {
+    let totalHorasProgramadas = 0;
+    let totalHorasTrabajadas = 0;
+
+    data.forEach(emp => {
+    totalHorasProgramadas += emp.total_horas_programadas || 0;
+    totalHorasTrabajadas += emp.total_horas_trabajadas || 0;
+    });
+
+    const eficiencia = totalHorasProgramadas > 0 ? 
+    Math.round((totalHorasTrabajadas / totalHorasProgramadas) * 100) : 0;
+
+    document.getElementById('totalEmpleados').textContent = data.length;
+    document.getElementById('horasProgramadas').textContent = totalHorasProgramadas.toFixed(1) + 'h';
+    document.getElementById('horasTrabajadas').textContent = totalHorasTrabajadas.toFixed(1) + 'h';
+    document.getElementById('eficiencia').textContent = eficiencia + '%';
+
+    document.getElementById('summaryStats').style.display = 'flex';
+    }
+
+    function mostrarFichajesCompletos(empleados, fechaInicio, fechaFin) {
+    const container = document.getElementById('tablaContainer');
+
+    if (!empleados || empleados.length === 0) {
+    container.innerHTML = '<div class="no-data"><p>No se encontraron empleados para el rango de fechas seleccionado</p></div>';
+    return;
+    }
+
+    const tabla = `
+    <table>
+    <thead>
+    <tr>
+    <th>Confirmado</th>
+    <th>👤 Empleados</th>
+    <th>📅 Turnos programados</th>
+    <th>Horas Prog.</th>
+    <th>📋 Fichajes</th>
+    <th>Horas Trab.</th>
+    <th>📊 Diferencia</th>
+    <th>Estado</th>
+    <th>Acciones</th>
+    </tr>
+    </thead>
+    <tbody>
+    ${empleados.map(emp => generarFilaEmpleado(emp)).join('')}
+    </tbody>
+    </table>
+    `;
+
+    container.innerHTML = tabla;
+    }
+
+    function generarFilaEmpleado(empleado) {
+    const inicial = empleado.nombre.charAt(0).toUpperCase();
+    const nombre = empleado.nombre;
+
+    // Generar badges para horarios programados
+    const horariosProgramados = empleado.horarios_programados.map(h => {
+    if (h.inicio1 && h.fin1) {
+    let badge = `<span class="time-badge time-programmed">${h.inicio1} - ${h.fin1}</span>`;
+    if (h.inicio2 && h.fin2) {
+    badge += `<br><span class="time-badge time-programmed">${h.inicio2} - ${h.fin2}</span>`;
+    }
+    return badge;
+    }
+    return '';
+    }).filter(h => h).join('<br>');
+
+    // Generar badges para fichajes
+    const fichajesHtml = empleado.fichajes.length > 0 ? 
+    empleado.fichajes.map(f => {
+    const fecha = new Date(f.fecha_hora);
+    const hora = fecha.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
+    const tipo = f.tipo === 'ENTRADA' ? '🟢' : '🔴';
+    return `<span class="time-badge time-worked">${tipo} ${hora}</span>`;
+    }).join('<br>') : 
+    '<span style="color: #666;">Sin fichajes</span>';
+
+    // Calcular diferencia de horas
+    const diferencia = empleado.total_horas_trabajadas - empleado.total_horas_programadas;
+    const diferenciaColor = diferencia >= 0 ? '#2e7d32' : '#d32f2f';
+    const diferenciaTexto = diferencia >= 0 ? `+${diferencia.toFixed(1)}h` : `${diferencia.toFixed(1)}h`;
+
+    // Estado del empleado
+    const estado = empleado.fichajes.length > 0 ? 
+    '<span class="status-confirmed">✓ Fichado</span>' : 
+    '<span class="status-pending">⏳ Sin fichar</span>';
+
+    return `
+    <tr>
+    <td class="checkbox-cell">
+    <input type="checkbox">
+    </td>
+    <td>
+    <div class="employee-info">
+    <div class="employee-avatar">${inicial}</div>
+    <div class="employee-name">${nombre}</div>
+    </div>
+    </td>
+    <td>${horariosProgramados || '-'}</td>
+    <td><span class="duration-badge">${empleado.total_horas_programadas.toFixed(1)}h</span></td>
+    <td>${fichajesHtml}</td>
+    <td><span class="duration-badge">${empleado.total_horas_trabajadas.toFixed(1)}h</span></td>
+    <td><span style="color: ${diferenciaColor}; font-weight: bold;">${diferenciaTexto}</span></td>
+    <td>${estado}</td>
+    <td class="actions-cell">
+    <button class="btn btn-small btn-edit" onclick="editarEmpleado(${empleado.id})">✏️</button>
+    <button class="btn btn-small" onclick="verMas(${empleado.id})">⋮</button>
+    </td>
+    </tr>
+    `;
+    }
+
+    function mostrarCargando() {
+    document.getElementById('tablaContainer').innerHTML = 
+    '<div class="loading"><p>⏳ Cargando fichajes...</p></div>';
+    document.getElementById('summaryStats').style.display = 'none';
+    }
+
+    function mostrarMensaje(mensaje) {
+    document.getElementById('tablaContainer').innerHTML = 
+    `<div class="no-data"><p>${mensaje}</p></div>`;
+    document.getElementById('summaryStats').style.display = 'none';
+    }
+
+    function editarEmpleado(empleadoId) {
+    alert(`Editar empleado ID: ${empleadoId}`);
+    }
+
+    function verMas(empleadoId) {
+    const empleado = fichajesData.find(emp => emp.id === empleadoId);
+    if (empleado) {
+    let detalles = `Detalles de ${empleado.nombre}:\n\n`;
+    detalles += `Horas programadas: ${empleado.total_horas_programadas.toFixed(1)}h\n`;
+    detalles += `Horas trabajadas: ${empleado.total_horas_trabajadas.toFixed(1)}h\n`;
+    detalles += `\nFichajes:\n`;
+    empleado.fichajes.forEach(f => {
+    const fecha = new Date(f.fecha_hora);
+    detalles += `${f.tipo}: ${fecha.toLocaleString('es-ES')}\n`;
+    });
+    alert(detalles);
+    }
+    }
+
+    function exportarDatos() {
+    if (!fichajesData || fichajesData.length === 0) {
+    alert('No hay datos para exportar');
+    return;
+    }
+
+    // Crear CSV
+    let csv = 'Empleado,Horas Programadas,Horas Trabajadas,Diferencia,Estado\n';
+    fichajesData.forEach(emp => {
+    const diferencia = emp.total_horas_trabajadas - emp.total_horas_programadas;
+    const estado = emp.fichajes.length > 0 ? 'Fichado' : 'Sin fichar';
+    csv += `"${emp.nombre}",${emp.total_horas_programadas.toFixed(1)},${emp.total_horas_trabajadas.toFixed(1)},${diferencia.toFixed(1)},"${estado}"\n`;
+    });
+
+    // Descargar archivo
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `fichajes_${document.getElementById('fecha_inicio').value}_${document.getElementById('fecha_fin').value}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    }
+
+    // Keyboard shortcuts
+    $(document).keydown(function(e) {
+    if (e.ctrlKey && e.key === 'f') {
+    e.preventDefault();
+    document.getElementById('fecha_inicio').focus();
+    }
+    if (e.ctrlKey && e.key === 'e') {
+    e.preventDefault();
+    exportarDatos();
+    }
+    });
+    </script>
+    </body>
+</html>

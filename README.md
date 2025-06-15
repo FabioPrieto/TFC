@@ -72,6 +72,7 @@ Aplicación móvil multiplataforma desarrollada con Expo Router (React Native + 
 
    ```bash
    npm run start
+
    # Para Android
    npm run android
    # Para iOS
@@ -144,10 +145,10 @@ Actualmente no hay tests automatizados incluidos. Para verificar funcionalidades
 
 * **Test de conexión**: Verificar alcance del servidor PHP.
 * **Listado de Empleados**: Fetch de `/FuncionesBD.php?tipo_operacion=get_empleados`.
-* **Listado de Clientes**: Fetch de `/FuncionesBD.php?tipo_operacion=get_clientes`.
-* **Listado de Servicios**: Fetch de `/FuncionesBD.php?tipo_operacion=get_servicios`.
-* **Listado de Artículos**: Fetch de `/FuncionesBD.php?tipo_operacion=get_articulos`.
-* **Creación de Cliente**: Formulario para `tipo_operacion=crear_cliente`.
+* **Listado de fichajes**: Fetch de `/FuncionesBD.php?tipo_operacion=get_fichajes`.
+* **Fichar entrada**: Fetch de `/FuncionesBD.php?tipo_operacion=fichar_entrada`.
+* **Fichar salida**: Fetch de `/FuncionesBD.php?tipo_operacion=fichar_salida`.
+* **editar Fichajes**: Formulario para `tipo_operacion=editar_fichaje`.
 * **Operaciones genéricas**: Se pueden extender endpoints en `config/database.js`.
 
 ---
@@ -164,4 +165,4 @@ Actualmente no hay tests automatizados incluidos. Para verificar funcionalidades
 ## 👨‍💻 Autor/es y créditos
 
 * **Autor**: Fabio Prieto – [github.com/FabioPrieto](https://github.com/FabioPrieto)
-* Inspirado en sistemas TPV de peluquería y demostraciones de Expo Router.
+* Inspirado en sistemas do control horario y demostraciones de Expo Router.
