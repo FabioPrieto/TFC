@@ -1,50 +1,159 @@
-# Welcome to your Expo app 👋
+## 📌 Título del Proyecto y Descripción breve
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**TFC**
+Aplicación móvil multiplataforma desarrollada con Expo Router (React Native + TypeScript) para la gestión de datos de un sistema TPV (Punto de Venta) basado en un backend PHP (FuncionesBD.php). Permite consultar empleados, clientes, servicios y artículos, así como crear nuevos registros en el servidor.
 
-## Get started
+---
 
-1. Install dependencies
+## 🎯 Objetivo del proyecto
+
+1. Proveer una interfaz móvil intuitiva para interactuar con un API PHP remota.
+2. Facilitar operaciones CRUD básicas: obtener listas de empleados, clientes, servicios y artículos.
+3. Permitir la creación de nuevos clientes desde la app.
+4. Servir como base para extender funcionalidades de un TPV de peluquería u otros negocios.
+
+---
+
+## 🧠 Tecnologías y lenguajes usados
+
+* **Lenguaje**: TypeScript (`.tsx`, `.ts`)
+* **Framework móvil**: [Expo SDK](https://docs.expo.dev/) + [Expo Router](https://expo.github.io/router/)
+* **UI / Navegación**:
+
+  * React Native (componentes básicos)
+  * `@react-navigation/bottom-tabs` para pestañas inferiores
+  * `@expo/vector-icons` para iconos
+* **Almacenamiento local**: `@react-native-async-storage/async-storage`
+* **WebView**: `react-native-webview` (si se necesitan vistas web)
+* **Linter / Formato**: ESLint (`eslint-config-expo`), TypeScript
+* **Otros**:
+
+  * `react-native-screens`, `react-native-safe-area-context`
+  * `expo-asset`, `expo-file-system` (gestión de assets)
+
+---
+
+## 🚀 Cómo ejecutar el proyecto
+
+1. **Clonar el repositorio**
+
+   ```bash
+   git clone https://github.com/FabioPrieto/TFC.git
+   cd TFC
+   ```
+
+2. **Instalar dependencias**
 
    ```bash
    npm install
+   # o
+   yarn install
    ```
 
-2. Start the app
+3. **Configurar la URL del backend**
+   Edita `config/database.js`, ajustando `BASE_URL` a tu dominio con el archivo `FuncionesBD.php`.
+
+   ```js
+   const DATABASE_CONFIG = {
+     BASE_URL: 'https://tu-dominio.com/tpv/App',
+     …
+   }
+   ```
+
+4. **Levantar el servidor de desarrollo**
 
    ```bash
-   npx expo start
+   npm run start
+   # Para Android
+   npm run android
+   # Para iOS
+   npm run ios
+   # Para Web
+   npm run web
    ```
 
-In the output, you'll find options to open the app in a
+5. **(Opcional) Resetear proyecto**
+   Si necesitas limpiar caches o restablecer carpetas:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+   ```bash
+   npm run reset-project
+   ```
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+---
 
-## Get a fresh project
+## 🧪 Instrucciones para testing
 
-When you're ready, run:
+Actualmente no hay tests automatizados incluidos. Para verificar funcionalidades:
 
-```bash
-npm run reset-project
+1. Inicia la app en tu emulador/dispositivo.
+2. Utiliza la pestaña **Conexión** o similar para ejecutar `test_conexion`.
+3. Navega por cada pestaña (Empleados, Clientes, Servicios, Artículos) y asegúrate de que los datos se cargan correctamente.
+4. Prueba crear un nuevo cliente desde el formulario y confirma su aparición en la lista.
+
+---
+
+## 🤝 Instrucciones para contribuir
+
+* **Issues**: Reporta bugs o solicita features en la sección de *Issues* del repositorio.
+* **Pull Requests**:
+
+  1. Crea un branch con prefijo `feature/` o `bugfix/`.
+  2. Escribe commits claros y descriptivos.
+  3. Añade descripciones en tu PR explicando cambios y cómo probarlos.
+
+---
+
+## 📁 Estructura de carpetas y explicación general
+
+```text
+/
+├─ app/                   # Rutas de Expo Router (.tsx)
+│  ├─ index.tsx           # Pantalla principal / landing
+│  ├─ _layout.tsx         # Layout global (tabs, header)
+│  └─ +not-found.tsx      # 404 interno
+├─ assets/                # Imágenes, iconos, fuentes
+├─ config/
+│  └─ database.js         # Configuración de endpoints y BASE_URL
+├─ constants/
+│  └─ Colors.ts           # Paleta de colores de la app
+├─ hooks/                 # Hooks personalizados (tema, colorScheme)
+├─ services/              # Lógica de conexión al backend
+│  ├─ apiService.js       # Cliente HTTP con URLSearchParams
+│  └─ DatabaseService.js  # Abstracción para llamadas CRUD
+├─ scripts/
+│  └─ reset-project.js    # Limpieza de caches y carpetas temporales
+├─ .vscode/               # Configuración de VSCode
+├─ app.json               # Configuración Expo
+├─ eas.json               # EAS Build config
+├─ package.json           # Dependencias y scripts
+├─ tsconfig.json          # Configuración TypeScript
+└─ eslint.config.js       # Reglas de linting
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+## ✨ Funcionalidades principales
 
-To learn more about developing your project with Expo, look at the following resources:
+* **Test de conexión**: Verificar alcance del servidor PHP.
+* **Listado de Empleados**: Fetch de `/FuncionesBD.php?tipo_operacion=get_empleados`.
+* **Listado de Clientes**: Fetch de `/FuncionesBD.php?tipo_operacion=get_clientes`.
+* **Listado de Servicios**: Fetch de `/FuncionesBD.php?tipo_operacion=get_servicios`.
+* **Listado de Artículos**: Fetch de `/FuncionesBD.php?tipo_operacion=get_articulos`.
+* **Creación de Cliente**: Formulario para `tipo_operacion=crear_cliente`.
+* **Operaciones genéricas**: Se pueden extender endpoints en `config/database.js`.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+---
 
-## Join the community
+## 📚 Recursos adicionales
 
-Join our community of developers creating universal apps.
+* **Backend PHP**: `FuncionesBD.php` del proyecto TPV
+* **Expo Router Docs**: [https://expo.github.io/router/](https://expo.github.io/router/)
+* **AsyncStorage**: [https://react-native-async-storage.github.io/async-storage/](https://react-native-async-storage.github.io/async-storage/)
+* **React Navigation**: [https://reactnavigation.org/](https://reactnavigation.org/)
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+---
+
+## 👨‍💻 Autor/es y créditos
+
+* **Autor**: Fabio Prieto – [github.com/FabioPrieto](https://github.com/FabioPrieto)
+* Inspirado en sistemas TPV de peluquería y demostraciones de Expo Router.
