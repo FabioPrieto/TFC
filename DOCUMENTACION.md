@@ -1,4 +1,4 @@
-# TFC - Time Focus Control
+# Sistema de Control Horario para Salones – Integrado con TPV PeluqueriaUnida
 
 *App móvil desarrollada con Expo y React Native enfocada en la gestión del tiempo, basada en tareas y productividad.*
 
@@ -41,17 +41,21 @@ Utiliza navegación basada en archivos mediante `expo-router`, almacenamiento lo
 
 ### 2. Justificación y motivación del proyecto 🧠
 
-La gestión del tiempo es un reto constante en la vida personal y profesional. Este proyecto surge de la necesidad de contar con una herramienta simple, eficaz y multiplataforma que ayude a los usuarios a visualizar, controlar y mejorar su productividad diaria.
+La gestión del tiempo es un desafío constante para los salones, especialmente aquellos con recursos limitados o equipos pequeños. Este proyecto nace como un **módulo integrado del sistema TPV PeluqueriaUnida**, una solución gratuita ya orientada a este sector.
 
-El auge del teletrabajo y la educación a distancia refuerzan la relevancia de herramientas que apoyen el enfoque y la eficiencia.
+La motivación principal es **cubrir un hueco real en el mercado**: ofrecer a los salones una herramienta de control horario moderna, intuitiva y adaptada a sus necesidades, sin costes adicionales ni complicaciones técnicas.
+
+La aplicación no solo facilita el control de horarios y turnos, sino que incluye elementos humanos como la **felicitación automática de cumpleaños** a miembros del equipo, reforzando el trato personalizado que caracteriza al sector.
 
 ---
 
 ### 3. Objetivos del proyecto 📦
 
-* Proporcionar una herramienta intuitiva para permitir a las empresas a llevar un recuento de las horas trabajadas de su equipo (obligatorio).
-* Implementar navegación modular y almacenamiento persistente.
-* Desarrollar la app con tecnologías móviles modernas (Expo + React Native + TypeScript).
+* Brindar a los salones una herramienta intuitiva e integrada con el TPV PeluqueriaUnida para gestionar el tiempo y los fichajes del equipo.
+
+* Simplificar el control de turnos, vacaciones y horarios sin necesidad de servicios externos ni conocimientos técnicos avanzados.
+
+* Desarrollar la app con tecnologías móviles modernas (Expo + React Native + TypeScript) para asegurar su portabilidad y mantenimiento.
 
 ---
 
@@ -66,14 +70,23 @@ El proyecto **TFC** presenta una imagen visual coherente con su propósito: prod
 
 ### 5. Estudio de mercado 📊
 
-**Estado del arte:** Existen apps como Forest, Focus To-Do y Toggl Track.  
-**Diferenciación:** TFC se enfoca en simplicidad, sin requerir cuentas externas ni depender de servidores.  
-**Potenciales usuarios:** Estudiantes, profesionales freelance y cualquier persona interesada en mejorar su gestión del tiempo.  
-**Valor añadido:** Código abierto, privacidad al no usar servidores, e interfaz altamente personalizable.
+**Estado del arte:** Existen apps como Toggl Track o Clockify, pero no están integradas con soluciones TPV específicas para salones.
+**Diferenciación:** Este sistema está pensado desde el primer momento como complemento natural de TPV PeluqueriaUnida.
+**Potenciales usuarios:** Salones pequeños, autónomos o con baja facturación, que ya usan o podrían usar el TPV gratuito.
+Valor añadido:
+
+* 100% integrado con el sistema de caja y gestión diaria del salón.
+
+* Felicitaciones automáticas de cumpleaños para el equipo.
+
+* No requiere cuentas externas ni configuraciones complicadas.
+
+* Se beneficia del respaldo de PeluqueriaUnida y asociaciones del sector en España.
 
 ---
 
 ### 6. Presupuesto estimado 💰
+Este presupuesto se ha optimizado al máximo al tratarse de una solución dirigida a salones con recursos limitados y en conjunto con una herramienta TPV gratuita.
 
 | Concepto                              | Costo estimado (€) |
 | ------------------------------------- | ------------------ |
@@ -236,9 +249,7 @@ Se incluyen:
 
 ### 13. Gestión de la información y datos 🖇️
 
-No se utiliza una base de datos externa. Se detecta el uso de almacenamiento local (`@react-native-async-storage/async-storage`) para persistencia de información del usuario.
-
-No hay modelo entidad-relación explícito, ni uso de ORM, por lo que este aspecto se considera *pendiente*.
+Esta integrada con la base de datos MYSQL de peluquería unida
 
 ---
 
@@ -250,7 +261,8 @@ No hay modelo entidad-relación explícito, ni uso de ORM, por lo que este aspec
 * Base de datos remota para sincronización multi-dispositivo.
 * Dark mode personalizado.
 * Sistema de recompensas y logros.
-
+* Integración de estadísticas de rendimiento con el sistema TPV (por ejemplo, vincular servicios realizados con horas trabajadas).
+* Control de vacaciones desde el mismo panel del TPV.
 ---
 
 ### 15. Conclusiones 💭
@@ -273,10 +285,12 @@ El usuario puede:
 ![ManualUsuario1.png](./imagenes/ManualUsuario1.png)
 * Decir si es una entrada o salida.
 ![ManualUsuario2.png](./imagenes/ManualUsuario2.png)
-* Navegar fácilmente entre pestañas.
+* meter el pin para saber que persona del equipo es
 ![ManualUsuario3.png](./imagenes/ManualUsuario3.png)
-* Acceder sin conexión (offline-ready).
-* La interfaz está adaptada a móviles y muestra recordatorios visuales.
+* Comfirmar si es un descanso.
+![ManualUsuario4.png](./imagenes/ManualUsuario4.png)
+* En el panel de admin podras ver que dias se ficho, confirmar si se ficho correctamente, ver suantas horas se han trabajado, comparandola con las horas totales, tambien podras exportar las horas a .csv por si lo tienes que enviar al ministerio de trabajo, puedes editar la hora de dichaje del empleado
+![ManualUsuario5.png](./imagenes/ManualUsuario5.png)
 
 ---
 
