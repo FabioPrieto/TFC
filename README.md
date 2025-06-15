@@ -1,16 +1,24 @@
 ## 📌 Título del Proyecto y Descripción breve
 
-**TFC**
-Aplicación móvil multiplataforma desarrollada con Expo Router (React Native + TypeScript) para la gestión de datos de un sistema TPV (Punto de Venta) basado en un backend PHP (FuncionesBD.php). Permite consultar empleados, clientes, servicios y artículos, así como crear nuevos registros en el servidor.
+**TFC - Sistema de Control Horario para Empleados**
+
+Aplicación móvil multiplataforma desarrollada con Expo Router (React Native + TypeScript) para la gestión de fichajes de empleados en un entorno TPV. Permite registrar entradas y salidas, consultar datos y generar informes exportables en .csv para cumplir con los requisitos de inspecciones laborales del Ministerio de Trabajo.
 
 ---
 
 ## 🎯 Objetivo del proyecto
 
-1. Proveer una interfaz móvil intuitiva para interactuar con un API PHP remota.
-2. Facilitar operaciones CRUD básicas: obtener listas de empleados, clientes, servicios y artículos.
-3. Permitir la creación de nuevos clientes desde la app.
-4. Servir como base para extender funcionalidades de un TPV de peluquería u otros negocios.
+1. 🕒 Implementar un sistema de control horario fiable que registre entradas y salidas de empleados.
+
+2. 🧾 Permitir la exportación de registros a archivos .csv, cumpliendo con los requisitos de auditoría del Ministerio de Trabajo.
+
+3. 📅 Facilitar el seguimiento de turnos y jornadas laborales, tanto completas como parciales (descansos).
+
+4. 📲 Proveer una interfaz móvil simple e intuitiva que permita a los empleados fichar desde la app.
+
+5. 🌐 Establecer una conexión con un backend remoto en PHP que almacene y consulte los datos necesarios.
+
+6. 📊 Servir como una herramienta para la gestión interna y auditoría de la actividad laboral del personal.
 
 ---
 
