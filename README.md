@@ -1,4 +1,4 @@
-## 📌 Título del Proyecto y Descripción breve
+## 📌 Sistema de Control Horario
 
 **TFC - Sistema de Control Horario para Empleados**
 
