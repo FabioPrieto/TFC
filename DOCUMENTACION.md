@@ -93,7 +93,7 @@ Este presupuesto se ha optimizado al máximo al tratarse de una solución dirigi
 | Desarrollo (horas hombre, 16h)        | 1.280              |
 | Diseño UI/UX (4h)                     | 320                |
 | Pruebas y validación (2h)             | 160                |
-| Publicación en tiendas (2h)           | 100                |
+| Implementación (2h)                   | 100                |
 | Costes operativos (eventuales)        | 100                |
 | **Total estimado**                    | **1.960 €**        |
 
