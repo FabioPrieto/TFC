@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import {
   Alert,
+  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import ConfirmationModal from "../../components/ConfirmationModal"; // Nuevo import
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PinModal from "../../components/PinModal";
 import { apiService } from "../../services/api";
@@ -18,12 +20,18 @@ export default function TimeControlScreen() {
   const [timeRecords, setTimeRecords] = useState([]);
   const [showPinModal, setShowPinModal] = useState(false);
   const [modalType, setModalType] = useState<"ENTRADA" | "SALIDA">("ENTRADA");
+  
+  // Estados para el modal de confirmación
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [confirmationType, setConfirmationType] = useState<"ENTRADA" | "SALIDA_DESCANSO" | "SALIDA_FIN_TURNO" | "VUELTA_DESCANSO" | "ERROR">("ENTRADA");
+  const [isSuccess, setIsSuccess] = useState(true);
+  
   const { user, logout } = useAuth();
 
-  const storeName = "Mi Tienda";
+  const storeName = user?.name || "Tienda";
 
   useEffect(() => {
-    const tabList = document.querySelector('.r-pointerEvents-105ug2t');
+    const tabList = document.querySelector(".r-pointerEvents-105ug2t");
     if (tabList) {
       (tabList as HTMLElement).style.display = "none";
     }
@@ -74,6 +82,12 @@ export default function TimeControlScreen() {
     setShowPinModal(true);
   };
 
+  const showConfirmation = (type: typeof confirmationType, success: boolean) => {
+    setConfirmationType(type);
+    setIsSuccess(success);
+    setShowConfirmationModal(true);
+  };
+
   const handlePinConfirm = async (
     pin: string,
     exitType?: "DESCANSO" | "FIN_TURNO"
@@ -86,6 +100,15 @@ export default function TimeControlScreen() {
 
       if (modalType === "ENTRADA") {
         response = await apiService.clockIn(user?.id, user?.storeId, pin);
+        
+        if (response.success) {
+          // Determinar si es entrada normal o vuelta de descanso
+          // Aquí puedes agregar lógica para detectar si viene de un descanso
+          // Por ahora asumo que es entrada normal
+          showConfirmation("ENTRADA", true);
+        } else {
+          showConfirmation("ERROR", false);
+        }
       } else {
         response = await apiService.clockOut(
           user?.id,
@@ -93,26 +116,23 @@ export default function TimeControlScreen() {
           pin,
           exitType
         );
+
+        if (response.success) {
+          if (exitType === "DESCANSO") {
+            showConfirmation("SALIDA_DESCANSO", true);
+          } else {
+            showConfirmation("SALIDA_FIN_TURNO", true);
+          }
+        } else {
+          showConfirmation("ERROR", false);
+        }
       }
 
       if (response.success) {
-        Alert.alert(
-          "Éxito",
-          modalType === "ENTRADA"
-            ? "¡Llegada registrada correctamente!"
-            : `¡Salida registrada correctamente! (${
-                exitType === "DESCANSO" ? "Descanso" : "Fin de turno"
-              })`
-        );
         loadTimeRecords();
-      } else {
-        Alert.alert(
-          "Error",
-          response.message || `Error al registrar ${modalType.toLowerCase()}`
-        );
       }
     } catch (error) {
-      Alert.alert("Error", `Error al registrar ${modalType.toLowerCase()}`);
+      showConfirmation("ERROR", false);
     } finally {
       setIsLoading(false);
     }
@@ -172,100 +192,126 @@ export default function TimeControlScreen() {
         onConfirm={handlePinConfirm}
         type={modalType}
       />
+
+      <ConfirmationModal
+        visible={showConfirmationModal}
+        onClose={() => setShowConfirmationModal(false)}
+        type={confirmationType}
+        isSuccess={isSuccess}
+      />
     </SafeAreaView>
   );
 }
 
+// Los estilos permanecen igual...
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
+    padding: 20,
+    width: "100%",
+    maxWidth: 1400,
+    alignSelf: "center",
   },
   header: {
-    backgroundColor: "#fff",
-    paddingTop: 20,
-    paddingHorizontal: 20,
-    paddingBottom: 30,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-    elevation: 2,
+    width: "100%",
+    backgroundColor: "#667eea",
+    padding: 20,
+    borderRadius: 10,
+    marginBottom: 30,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    alignItems: "flex-start",
+    shadowRadius: 6,
+    elevation: 8,
   },
   storeName: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: "bold",
-    color: "#333",
-    marginBottom: 8,
-  },
-  dateText: {
-    fontSize: 34,
-    color: "#666",
-    marginBottom: 8,
-    textTransform: "capitalize",
-    textAlign: "center",
-  },
-  timeText: {
-    fontSize: 64,
-    fontWeight: "300",
-    color: "#2196F3",
-    fontFamily: "monospace",
-    textAlign: "center",
+    color: "white",
+    marginBottom: 0,
+    flex: 1,
   },
   logoutButton: {
-    position: "absolute",
-    top: 20,
-    right: 20,
-    padding: 8,
+    position: "relative",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    borderRadius: 25,
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.3)",
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: 10,
   },
   logoutText: {
-    color: "#ff4444",
-    fontWeight: "500",
+    color: "white",
+    fontWeight: "600",
+    fontSize: 14,
+    letterSpacing: 0.5,
   },
   content: {
     flex: 1,
     justifyContent: "center",
-    padding: 20,
+    alignItems: "center",
+    padding: 0,
+    marginTop: 0,
+    width: "100%",
+  },
+  dateText: {
+    fontSize: 28,
+    color: "#333",
+    marginBottom: 8,
+    textTransform: "capitalize",
     textAlign: "center",
-    // alignItems: 'center',
-    marginTop: 40,
+    fontWeight: "600",
+    fontFamily: Platform.OS === "ios" ? "System" : "sans-serif",
+  },
+  timeText: {
+    fontSize: 64,
+    fontWeight: "300",
+    color: "#667eea",
+    fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+    textAlign: "center",
+    marginBottom: 10,
+    letterSpacing: 2,
   },
   buttonContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 15,
+    justifyContent: "center",
+    gap: 20,
     marginTop: 40,
+    width: "100%",
   },
   button: {
     flex: 1,
-    paddingVertical: 20,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    paddingVertical: 18,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+    marginHorizontal: 5,
+    backgroundColor: "#667eea",
+    shadowColor: "#764ba2",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
+    alignItems: "center",
+    justifyContent: "center",
   },
   arrivalButton: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#667eea",
   },
   departureButton: {
-    backgroundColor: "#f44336",
+    backgroundColor: "#764ba2",
   },
   buttonText: {
-    color: "#fff",
+    color: "white",
     fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
+    letterSpacing: 1,
   },
 });
