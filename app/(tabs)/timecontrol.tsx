@@ -7,12 +7,16 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ImageBackground,
+  Modal,
 } from "react-native";
-import ConfirmationModal from "../../components/ConfirmationModal"; // Nuevo import
+import ConfirmationModal from "../../components/ConfirmationModal";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PinModal from "../../components/PinModal";
 import { apiService } from "../../services/api";
 import { useAuth } from "../context/AuthContext";
+
+const backgroundImage = require("../../assets/backgrounds/fondo_1_tpv.jpg");
 
 export default function TimeControlScreen() {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -20,56 +24,44 @@ export default function TimeControlScreen() {
   const [timeRecords, setTimeRecords] = useState([]);
   const [showPinModal, setShowPinModal] = useState(false);
   const [modalType, setModalType] = useState<"ENTRADA" | "SALIDA">("ENTRADA");
-  
-  // Estados para el modal de confirmación
+
+  // Estados para el tema y el menú desplegable
+  const [theme, setTheme] = useState<"claro" | "oscuro" | "azul">("claro");
+  const [showThemeMenu, setShowThemeMenu] = useState(false);
+
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [confirmationType, setConfirmationType] = useState<"ENTRADA" | "SALIDA_DESCANSO" | "SALIDA_FIN_TURNO" | "VUELTA_DESCANSO" | "ERROR">("ENTRADA");
   const [isSuccess, setIsSuccess] = useState(true);
-  
+  const [farewellMessage, setFarewellMessage] = useState("");
+
   const { user, logout } = useAuth();
 
-  const storeName = user?.name || "Tienda";
+  // ST_NAME dinámico desde la base de datos (según tu tabla STORE)
+  const storeNameDisplay = user?.name || "ST_NAME";
 
   useEffect(() => {
-    const tabList = document.querySelector(".r-pointerEvents-105ug2t");
-    if (tabList) {
-      (tabList as HTMLElement).style.display = "none";
+    if (Platform.OS === 'web') {
+      const tabList = document.querySelector(".r-pointerEvents-105ug2t");
+      if (tabList) (tabList as HTMLElement).style.display = "none";
     }
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     loadTimeRecords();
-
     return () => clearInterval(timer);
   }, []);
 
   const loadTimeRecords = async () => {
     if (!user) return;
-
     try {
       const response = await apiService.getTimeRecords(user.id, user.storeId);
-      if (response.success) {
-        setTimeRecords(response.records || []);
-      }
+      if (response.success) setTimeRecords(response.records || []);
     } catch (error) {
       console.error("Error loading time records:", error);
     }
   };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString("es-ES", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-  };
-
-  const formatDate = (date: Date) => {
-    const dayName = date.toLocaleDateString("es-ES", { weekday: "long" });
-    const day = date.getDate();
-    const month = date.toLocaleDateString("es-ES", { month: "long" });
-    return `${dayName} - ${day} - ${month}`;
+  const selectTheme = (newTheme: "claro" | "oscuro" | "azul") => {
+    setTheme(newTheme);
+    setShowThemeMenu(false);
   };
 
   const handleClockIn = () => {
@@ -82,224 +74,270 @@ export default function TimeControlScreen() {
     setShowPinModal(true);
   };
 
-  const showConfirmation = (type: typeof confirmationType, success: boolean) => {
-    setConfirmationType(type);
-    setIsSuccess(success);
-    setShowConfirmationModal(true);
+  const calcularMensajeDespedida = async () => {
+    try {
+      const festivos = await apiService.getFestivos(user?.storeId);
+      const hoy = new Date();
+      const diasSemana = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+
+      // Buscar el próximo día laborable (máximo 7 días adelante)
+      for (let i = 1; i <= 7; i++) {
+        const siguiente = new Date(hoy);
+        siguiente.setDate(hoy.getDate() + i);
+
+        const diaSemana = siguiente.getDay();
+        // Saltar fines de semana (sábado=6, domingo=0)
+        if (diaSemana === 0 || diaSemana === 6) continue;
+
+        // Comprobar si es festivo
+        const fechaStr = siguiente.toISOString().split("T")[0];
+        if (festivos[fechaStr]) continue;
+
+        // Es día laborable
+        if (i === 1) {
+          return "¡Nos vemos mañana!";
+        }
+        return `¡Nos vemos el ${diasSemana[diaSemana]}!`;
+      }
+      return "";
+    } catch {
+      return "";
+    }
   };
 
-  const handlePinConfirm = async (
-    pin: string,
-    exitType?: "DESCANSO" | "FIN_TURNO"
-  ) => {
+  const handlePinConfirm = async (pin: string, exitType?: "DESCANSO" | "FIN_TURNO") => {
     setIsLoading(true);
     setShowPinModal(false);
-
+    setFarewellMessage("");
     try {
       let response;
-
       if (modalType === "ENTRADA") {
         response = await apiService.clockIn(user?.id, user?.storeId, pin);
-        
-        if (response.success) {
-          // Determinar si es entrada normal o vuelta de descanso
-          // Aquí puedes agregar lógica para detectar si viene de un descanso
-          // Por ahora asumo que es entrada normal
-          showConfirmation("ENTRADA", true);
-        } else {
-          showConfirmation("ERROR", false);
-        }
+        setIsSuccess(response.success);
+        setConfirmationType(response.success ? "ENTRADA" : "ERROR");
       } else {
-        response = await apiService.clockOut(
-          user?.id,
-          user?.storeId,
-          pin,
-          exitType
-        );
+        response = await apiService.clockOut(user?.id, user?.storeId, pin, exitType);
+        setIsSuccess(response.success);
 
         if (response.success) {
           if (exitType === "DESCANSO") {
-            showConfirmation("SALIDA_DESCANSO", true);
+            setConfirmationType("SALIDA_DESCANSO");
           } else {
-            showConfirmation("SALIDA_FIN_TURNO", true);
+            // Calcular mensaje de despedida ANTES de mostrar el modal
+            const mensaje = await calcularMensajeDespedida();
+            setFarewellMessage(mensaje);
+            setConfirmationType("SALIDA_FIN_TURNO");
           }
         } else {
-          showConfirmation("ERROR", false);
+          setConfirmationType("ERROR");
         }
       }
-
-      if (response.success) {
-        loadTimeRecords();
-      }
+      setShowConfirmationModal(true);
+      if (response.success) loadTimeRecords();
     } catch (error) {
-      showConfirmation("ERROR", false);
+      setConfirmationType("ERROR");
+      setIsSuccess(false);
+      setShowConfirmationModal(true);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      "Cerrar Sesión",
-      "¿Estás seguro de que quieres cerrar sesión?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        { text: "Cerrar Sesión", onPress: logout },
-      ]
-    );
+    Alert.alert("Cerrar Sesión", "¿Seguro que quieres salir?", [
+      { text: "No", style: "cancel" },
+      { text: "Sí", onPress: () => logout && logout() },
+    ]);
   };
 
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
+  if (isLoading) return <LoadingSpinner />;
+
+  const appBackgroundColor = theme === "claro" ? "transparent" : theme === "oscuro" ? "#1a1a1a" : "#1e3a8a";
+  const headerBackgroundColor = theme === "claro" ? "#667eea" : "rgba(255,255,255,0.1)";
+  const textColor = theme === "claro" ? "#333" : "#fff";
+  const clockColor = theme === "claro" ? "#667eea" : "#fff";
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.storeName}>{storeName}</Text>
+    <View style={[styles.mainWrapper, { backgroundColor: theme === "claro" ? "#fff" : appBackgroundColor }]}>
+      <ImageBackground
+        source={theme === "claro" ? backgroundImage : { uri: "" }}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+        // Mostramos la imagen solo en tema claro, si no, opacidad 0
+        imageStyle={theme !== "claro" ? { opacity: 0 } : { opacity: 1 }}
+      >
+        <SafeAreaView style={styles.container}>
+          <View style={[styles.header, { backgroundColor: headerBackgroundColor }]}>
+            <Text style={styles.storeName}>{storeNameDisplay}</Text>
 
-        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-          <Text style={styles.logoutText}>Cerrar Sesión</Text>
-        </TouchableOpacity>
-      </View>
+            <View style={styles.headerButtons}>
+              <TouchableOpacity onPress={() => setShowThemeMenu(true)} style={styles.themeButton}>
+                <Text style={styles.headerBtnText}>Tema: {theme.toUpperCase()} ▼</Text>
+              </TouchableOpacity>
 
-      <View style={styles.content}>
-        <Text style={styles.dateText}>{formatDate(currentTime)}</Text>
-        <Text style={styles.timeText}>{formatTime(currentTime)}</Text>
+              <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+                <Text style={styles.headerBtnText}>Cerrar Sesión</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
 
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[styles.button, styles.arrivalButton]}
-            onPress={handleClockIn}
-            disabled={isLoading}
-          >
-            <Text style={styles.buttonText}>Llegada</Text>
-          </TouchableOpacity>
+          {/* MENÚ DESPLEGABLE */}
+          <Modal visible={showThemeMenu} transparent animationType="fade">
+            <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowThemeMenu(false)}>
+              <View style={styles.dropdown}>
+                <TouchableOpacity style={styles.dropdownItem} onPress={() => selectTheme("claro")}>
+                  <Text style={styles.dropdownText}>⚪ Claro (Ondas)</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.dropdownItem} onPress={() => selectTheme("oscuro")}>
+                  <Text style={styles.dropdownText}>⚫ Oscuro</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.dropdownItem, { borderBottomWidth: 0 }]} onPress={() => selectTheme("azul")}>
+                  <Text style={styles.dropdownText}>🔵 Azul Noche</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          </Modal>
 
-          <TouchableOpacity
-            style={[styles.button, styles.departureButton]}
-            onPress={handleClockOut}
-            disabled={isLoading}
-          >
-            <Text style={styles.buttonText}>Salida</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+          <View style={styles.content}>
+            <Text style={[styles.dateText, { color: textColor }]}>
+              {currentTime.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}
+            </Text>
+            <Text style={[styles.timeText, { color: clockColor }]}>
+              {currentTime.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: false })}
+            </Text>
 
-      <PinModal
-        visible={showPinModal}
-        onClose={() => setShowPinModal(false)}
-        onConfirm={handlePinConfirm}
-        type={modalType}
-      />
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={[styles.button, styles.arrivalButton]} onPress={handleClockIn}>
+                <Text style={styles.buttonText}>Llegada</Text>
+              </TouchableOpacity>
 
-      <ConfirmationModal
-        visible={showConfirmationModal}
-        onClose={() => setShowConfirmationModal(false)}
-        type={confirmationType}
-        isSuccess={isSuccess}
-      />
-    </SafeAreaView>
+              <TouchableOpacity style={[styles.button, styles.departureButton]} onPress={handleClockOut}>
+                <Text style={styles.buttonText}>Salida</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <PinModal visible={showPinModal} onClose={() => setShowPinModal(false)} onConfirm={handlePinConfirm} type={modalType} />
+          <ConfirmationModal visible={showConfirmationModal} onClose={() => setShowConfirmationModal(false)} type={confirmationType} isSuccess={isSuccess} extraMessage={farewellMessage} />
+        </SafeAreaView>
+      </ImageBackground>
+    </View>
   );
 }
 
-// Los estilos permanecen igual...
+
 const styles = StyleSheet.create({
+  mainWrapper: {
+    flex: 1,
+  },
+  backgroundImage: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    zIndex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
     padding: 20,
-    width: "100%",
-    maxWidth: 1400,
-    alignSelf: "center",
+    zIndex: 2,
   },
   header: {
-    width: "100%",
-    backgroundColor: "#667eea",
-    padding: 20,
-    borderRadius: 10,
-    marginBottom: 30,
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    alignItems: "center",
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 20,
     elevation: 8,
   },
+  headerButtons: {
+    flexDirection: "row",
+    gap: 10,
+  },
   storeName: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: "bold",
     color: "white",
-    marginBottom: 0,
     flex: 1,
   },
-  logoutButton: {
-    position: "relative",
+  themeButton: {
     paddingVertical: 10,
-    paddingHorizontal: 16,
-    backgroundColor: "rgba(255,255,255,0.15)",
-    borderRadius: 25,
+    paddingHorizontal: 15,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "white",
+  },
+  logoutButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    borderRadius: 20,
     borderWidth: 2,
     borderColor: "rgba(255,255,255,0.3)",
-    flexDirection: "row",
-    alignItems: "center",
-    marginLeft: 10,
   },
-  logoutText: {
+  headerBtnText: {
     color: "white",
     fontWeight: "600",
-    fontSize: 14,
-    letterSpacing: 0.5,
+    fontSize: 12,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  dropdown: {
+    backgroundColor: "white",
+    borderRadius: 15,
+    width: 220,
+    padding: 5,
+    elevation: 10,
+  },
+  dropdownItem: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  dropdownText: {
+    fontSize: 16,
+    color: "#333",
+    fontWeight: "500",
   },
   content: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 0,
-    marginTop: 0,
-    width: "100%",
   },
   dateText: {
-    fontSize: 28,
-    color: "#333",
+    fontSize: 22,
     marginBottom: 8,
     textTransform: "capitalize",
-    textAlign: "center",
     fontWeight: "600",
-    fontFamily: Platform.OS === "ios" ? "System" : "sans-serif",
   },
   timeText: {
-    fontSize: 64,
+    fontSize: 80,
     fontWeight: "300",
-    color: "#667eea",
     fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
-    textAlign: "center",
-    marginBottom: 10,
     letterSpacing: 2,
   },
   buttonContainer: {
     flexDirection: "row",
-    justifyContent: "center",
     gap: 20,
     marginTop: 40,
     width: "100%",
   },
   button: {
     flex: 1,
-    paddingVertical: 18,
-    paddingHorizontal: 25,
-    borderRadius: 8,
-    marginHorizontal: 5,
-    backgroundColor: "#667eea",
-    shadowColor: "#764ba2",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
+    paddingVertical: 20,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
+    elevation: 6,
   },
   arrivalButton: {
     backgroundColor: "#667eea",
@@ -309,9 +347,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
-    textAlign: "center",
-    letterSpacing: 1,
   },
 });

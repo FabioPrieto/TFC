@@ -136,6 +136,23 @@ class ApiService {
     }
   }
 
+  async getFestivos(storeId) {
+    try {
+      const response = await this.makeRequest('/FuncionesBD.php', {
+        method: 'POST',
+        body: JSON.stringify({
+          tipo_operacion: 'get_festivos',
+          tienda: storeId
+        })
+      });
+
+      return response;
+    } catch (error) {
+      console.error('Get festivos error:', error);
+      return {};
+    }
+  }
+
   // Test connection method
   async testConnection() {
     try {

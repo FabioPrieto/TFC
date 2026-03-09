@@ -13,6 +13,7 @@ interface ConfirmationModalProps {
   onClose: () => void;
   type: "ENTRADA" | "SALIDA_DESCANSO" | "SALIDA_FIN_TURNO" | "VUELTA_DESCANSO" | "ERROR";
   isSuccess: boolean;
+  extraMessage?: string;
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -20,6 +21,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onClose,
   type,
   isSuccess,
+  extraMessage,
 }) => {
   // Memorizar el mensaje para que no cambie en cada render
   const message = useMemo(() => {
@@ -114,7 +116,10 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             <Text style={[styles.message, { color: getModalColor() }]}>
               {message}
             </Text>
-            
+            {extraMessage ? (
+              <Text style={styles.extraMessage}>{extraMessage}</Text>
+            ) : null}
+
             <TouchableOpacity
               style={[styles.button, { backgroundColor: getModalColor() }]}
               onPress={onClose}
@@ -159,6 +164,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 25,
     lineHeight: 24,
+  },
+  extraMessage: {
+    fontSize: 15,
+    color: "#555",
+    textAlign: "center",
+    marginBottom: 20,
+    lineHeight: 22,
+    fontStyle: "italic",
   },
   button: {
     paddingVertical: 12,
