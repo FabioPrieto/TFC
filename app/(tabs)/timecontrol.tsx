@@ -1,14 +1,14 @@
+import { router } from 'expo-router'; // 1. IMPORT AÑADIDO
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
+  ImageBackground,
+  Modal,
   Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
-  ImageBackground,
-  Modal,
+  View
 } from "react-native";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import LoadingSpinner from "../../components/LoadingSpinner";
@@ -24,6 +24,9 @@ export default function TimeControlScreen() {
   const [timeRecords, setTimeRecords] = useState([]);
   const [showPinModal, setShowPinModal] = useState(false);
   const [modalType, setModalType] = useState<"ENTRADA" | "SALIDA">("ENTRADA");
+
+  // 2. ESTADO PARA EL MODAL DE CERRAR SESIÓN YA ESTABA (lo mantengo)
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   // Estados para el tema y el menú desplegable
   const [theme, setTheme] = useState<"claro" | "oscuro" | "azul">("claro");
@@ -143,11 +146,16 @@ export default function TimeControlScreen() {
     }
   };
 
+  // Abre el modal de Cerrar Sesión
   const handleLogout = () => {
-    Alert.alert("Cerrar Sesión", "¿Seguro que quieres salir?", [
-      { text: "No", style: "cancel" },
-      { text: "Sí", onPress: () => logout && logout() },
-    ]);
+    setShowLogoutModal(true);
+  };
+
+  // Se ejecuta al confirmar en el modal
+  const confirmLogout = () => {
+    setShowLogoutModal(false);
+    if (logout) logout();
+    router.replace('/login');
   };
 
   if (isLoading) return <LoadingSpinner />;
@@ -181,7 +189,7 @@ export default function TimeControlScreen() {
             </View>
           </View>
 
-          {/* MENÚ DESPLEGABLE */}
+          {/* Menú desplegable */}
           <Modal visible={showThemeMenu} transparent animationType="fade">
             <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowThemeMenu(false)}>
               <View style={styles.dropdown}>
@@ -220,6 +228,38 @@ export default function TimeControlScreen() {
           <PinModal visible={showPinModal} onClose={() => setShowPinModal(false)} onConfirm={handlePinConfirm} type={modalType} />
           <ConfirmationModal visible={showConfirmationModal} onClose={() => setShowConfirmationModal(false)} type={confirmationType} isSuccess={isSuccess} extraMessage={farewellMessage} />
         </SafeAreaView>
+
+        {/* Modal de Cerrar Sesión */}
+        <Modal
+          visible={showLogoutModal}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowLogoutModal(false)}
+        >
+          <View style={styles.logoutModalOverlay}>
+            <View style={[styles.logoutModalBox, { backgroundColor: theme === "claro" ? "#fff" : theme === "oscuro" ? "#2d3748" : "#1e3a8a" }]}>
+              <Text style={[styles.logoutModalTitle, { color: textColor }]}>Cerrar Sesión</Text>
+              <Text style={[styles.logoutModalText, { color: textColor }]}>¿Estás seguro de que quieres salir de la cuenta de {storeNameDisplay}?</Text>
+
+              <View style={styles.logoutModalButtonsGroup}>
+                <TouchableOpacity
+                  style={styles.logoutModalCancelBtn}
+                  onPress={() => setShowLogoutModal(false)}
+                >
+                  <Text style={styles.logoutModalCancelText}>Cancelar</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.logoutModalConfirmBtn}
+                  onPress={confirmLogout}
+                >
+                  <Text style={styles.logoutModalConfirmText}>Sí, salir</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
       </ImageBackground>
     </View>
   );
@@ -349,5 +389,66 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 18,
     fontWeight: "bold",
+  },
+
+  // Estilos para el modal de Cerrar Sesión
+  logoutModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  logoutModalBox: {
+    width: "100%",
+    maxWidth: 400,
+    padding: 25,
+    borderRadius: 15,
+    elevation: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+  },
+  logoutModalTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  logoutModalText: {
+    fontSize: 16,
+    marginBottom: 25,
+    textAlign: "center",
+    opacity: 0.8,
+  },
+  logoutModalButtonsGroup: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 15,
+  },
+  logoutModalCancelBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    backgroundColor: "rgba(100,100,100,0.2)",
+    alignItems: "center",
+  },
+  logoutModalCancelText: {
+    color: "#888",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  logoutModalConfirmBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    backgroundColor: "#e53e3e",
+    alignItems: "center",
+  },
+  logoutModalConfirmText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });
