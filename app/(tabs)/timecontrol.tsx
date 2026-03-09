@@ -1,4 +1,4 @@
-import { router } from 'expo-router'; // 1. IMPORT AÑADIDO
+import { router } from 'expo-router'; 
 import React, { useEffect, useState } from "react";
 import {
   ImageBackground,
@@ -25,7 +25,6 @@ export default function TimeControlScreen() {
   const [showPinModal, setShowPinModal] = useState(false);
   const [modalType, setModalType] = useState<"ENTRADA" | "SALIDA">("ENTRADA");
 
-  // 2. ESTADO PARA EL MODAL DE CERRAR SESIÓN YA ESTABA (lo mantengo)
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   // Estados para el tema y el menú desplegable
@@ -39,7 +38,6 @@ export default function TimeControlScreen() {
 
   const { user, logout } = useAuth();
 
-  // ST_NAME dinámico desde la base de datos (según tu tabla STORE)
   const storeNameDisplay = user?.name || "ST_NAME";
 
   useEffect(() => {
@@ -126,7 +124,7 @@ export default function TimeControlScreen() {
           if (exitType === "DESCANSO") {
             setConfirmationType("SALIDA_DESCANSO");
           } else {
-            // Calcular mensaje de despedida ANTES de mostrar el modal
+            // Calcular mensaje de despedida antes de mostrar el modal
             const mensaje = await calcularMensajeDespedida();
             setFarewellMessage(mensaje);
             setConfirmationType("SALIDA_FIN_TURNO");
