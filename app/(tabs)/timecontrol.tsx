@@ -98,7 +98,7 @@ export default function TimeControlScreen() {
         if (i === 1) {
           return "¡Nos vemos mañana!";
         }
-        return `¡Nos vemos el ${diasSemana[diaSemana]}!`;
+        return `Feliz festivo, ${user?.name}`;
       }
       return "";
     } catch {
@@ -224,7 +224,7 @@ export default function TimeControlScreen() {
           </View>
 
           <PinModal visible={showPinModal} onClose={() => setShowPinModal(false)} onConfirm={handlePinConfirm} type={modalType} />
-          <ConfirmationModal visible={showConfirmationModal} onClose={() => setShowConfirmationModal(false)} type={confirmationType} isSuccess={isSuccess} extraMessage={farewellMessage} />
+          <ConfirmationModal visible={showConfirmationModal} onClose={() => setShowConfirmationModal(false)} type={confirmationType} isSuccess={isSuccess} extraMessage={farewellMessage} userName={user?.name}/>
         </SafeAreaView>
 
         {/* Modal de Cerrar Sesión */}

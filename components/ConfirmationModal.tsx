@@ -14,6 +14,7 @@ interface ConfirmationModalProps {
   type: "ENTRADA" | "SALIDA_DESCANSO" | "SALIDA_FIN_TURNO" | "VUELTA_DESCANSO" | "ERROR";
   isSuccess: boolean;
   extraMessage?: string;
+  userName?: string;
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -22,9 +23,12 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   type,
   isSuccess,
   extraMessage,
+  userName
 }) => {
   // Memorizar el mensaje para que no cambie en cada render
   const message = useMemo(() => {
+    const nameTag = userName ? `, ${userName}` : "";
+
     if (!isSuccess) {
       const errorMessages = [
         "❌ Oops! No se pudo registrar la acción",
@@ -39,12 +43,12 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     switch (type) {
       case "ENTRADA":
         const entradaMessages = [
-          "🌅 ¡Buenos días! Turno iniciado correctamente",
-          "✅ ¡Perfecto! Ya estás fichado para trabajar",
-          "🎯 ¡Listo! Tu jornada laboral ha comenzado",
-          "💪 ¡Excelente! Hora de dar lo mejor de ti",
-          "🚀 ¡Genial! Que tengas un día productivo",
-          "⭐ ¡Bienvenido! Tu turno está registrado",
+          `🌅 ¡Buenos días ${nameTag}! Turno iniciado correctamente`,
+          `✅ ¡Perfecto ${nameTag}! Ya estás fichado para trabajar`,
+          `🎯 ¡Listo ${nameTag}! Tu jornada laboral ha comenzado`,
+          `💪 ¡Excelente ${nameTag}! Hora de dar lo mejor de ti`,
+          `🚀 ¡Genial ${nameTag}! Que tengas un día productivo`,
+          `⭐ ¡Bienvenido ${nameTag}! Tu turno está registrado`,
         ];
         return entradaMessages[Math.floor(Math.random() * entradaMessages.length)];
 
@@ -72,12 +76,12 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
       case "SALIDA_FIN_TURNO":
         const finTurnoMessages = [
-          "🏁 ¡Turno completado! Que descanses bien",
-          "🌙 ¡Excelente trabajo! Hasta mañana",
-          "👏 ¡Jornada finalizada! Te lo has ganado",
-          "🎉 ¡Perfecto! Fin de turno registrado",
-          "🌅 ¡Gran día de trabajo! Nos vemos pronto",
-          "⭐ ¡Fantástico! Que tengas buena tarde/noche",
+          `🏁 ¡Turno completado ${nameTag}! Que descanses bien`,
+          `🌙 ¡Excelente trabajo ${nameTag}! Hasta pronto`,
+          `👏 ¡Jornada finalizada ${nameTag}! Te lo has ganado`,
+          `🎉 ¡Perfecto ${nameTag}! Fin de turno registrado`,
+          `🌅 ¡Gran día de trabajo ${nameTag}! Nos vemos pronto`,
+          `⭐ ¡Fantástico ${nameTag}! Que tengas buena tarde/noche`,
         ];
         return finTurnoMessages[Math.floor(Math.random() * finTurnoMessages.length)];
 
