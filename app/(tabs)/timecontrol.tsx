@@ -367,21 +367,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   dateText: {
-    fontSize: 22,
-    marginBottom: 8,
+    fontSize: 30,
+    marginBottom: 200,
     textTransform: "capitalize",
     fontWeight: "600",
   },
   timeText: {
-    fontSize: 80,
+    fontSize: 200,
     fontWeight: "300",
     fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
     letterSpacing: 2,
   },
   buttonContainer: {
     flexDirection: "row",
-    gap: 20,
-    marginTop: 40,
+    gap: 30,
+    marginTop: 200,
+    paddingHorizontal: 30,
     width: "100%",
   },
   button: {
