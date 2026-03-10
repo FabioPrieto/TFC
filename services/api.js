@@ -12,7 +12,7 @@ class ApiService {
 
       console.log(JSON.stringify(options))
 
-      // Convert JSON data to form data for PHP compatibility
+      // Convertir JSON a form data para compatibilidad con PHP
       let body = options.body;
       if (options.method === 'POST' && typeof body === 'string') {
         const jsonData = JSON.parse(body);
@@ -35,12 +35,12 @@ class ApiService {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('API Request Error:', error);
+      console.error('Error en la petición API:', error);
       throw error;
     }
   }
 
-  // Updated authentication method for store-based auth
+  // Autenticación de la tienda con nombre y contraseña de admin
   async authenticateStore(storeName, adminPassword) {
     try {
       const response = await this.makeRequest('/FuncionesBD.php', {
@@ -54,12 +54,12 @@ class ApiService {
 
       return response;
     } catch (error) {
-      console.error('Store authentication error:', error);
-      return { success: false, message: 'Store authentication failed' };
+      console.error('Error al autenticar la tienda:', error);
+      return { success: false, message: 'Error al autenticar la tienda' };
     }
   }
 
-  // Keep the old method for backward compatibility if needed
+  // Autenticación de usuario por PIN
   async authenticateUser(pin) {
     try {
       const response = await this.makeRequest('/FuncionesBD.php', {
@@ -72,8 +72,8 @@ class ApiService {
 
       return response;
     } catch (error) {
-      console.error('Authentication error:', error);
-      return { success: false, message: 'Authentication failed' };
+      console.error('Error al autenticar usuario:', error);
+      return { success: false, message: 'Error al autenticar' };
     }
   }
 
@@ -92,7 +92,7 @@ class ApiService {
 
       return response;
     } catch (error) {
-      console.error('Clock in error:', error);
+      console.error('Error al registrar entrada:', error);
       return { success: false, message: 'Error al registrar entrada' };
     }
   }
@@ -113,7 +113,7 @@ class ApiService {
 
       return response;
     } catch (error) {
-      console.error('Clock out error:', error);
+      console.error('Error al registrar salida:', error);
       return { success: false, message: 'Error al registrar salida' };
     }
   }
@@ -131,7 +131,7 @@ class ApiService {
 
       return response;
     } catch (error) {
-      console.error('Get time records error:', error);
+      console.error('Error al obtener fichajes:', error);
       return { success: false, message: 'Error al obtener registros' };
     }
   }
@@ -148,12 +148,12 @@ class ApiService {
 
       return response;
     } catch (error) {
-      console.error('Get festivos error:', error);
+      console.error('Error al obtener festivos:', error);
       return {};
     }
   }
 
-  // --- NUEVAS FUNCIONES PARA GUARDAR Y LEER EL TEMA ---
+  // Guarda el tema del usuario en la base de datos
   async updateTheme(userId, theme) {
     try {
       const response = await this.makeRequest('/FuncionesBD.php', {
@@ -166,11 +166,12 @@ class ApiService {
       });
       return response;
     } catch (error) {
-      console.error('Error saving theme:', error);
+      console.error('Error al guardar el tema:', error);
       return { success: false };
     }
   }
 
+  // Obtiene el tema guardado del usuario en la base de datos
   async getTheme(userId) {
     try {
       const response = await this.makeRequest('/FuncionesBD.php', {
@@ -182,7 +183,7 @@ class ApiService {
       });
       return response;
     } catch (error) {
-      console.error('Error getting theme:', error);
+      console.error('Error al obtener el tema:', error);
       return { success: false, theme: 'claro' };
     }
   }
@@ -199,8 +200,8 @@ class ApiService {
 
       return response;
     } catch (error) {
-      console.error('Connection test error:', error);
-      return { success: false, message: 'Connection test failed' };
+      console.error('Error en la prueba de conexión:', error);
+      return { success: false, message: 'Error en la prueba de conexión' };
     }
   }
 

@@ -12,7 +12,7 @@ interface PinModalProps {
   visible: boolean;
   onClose: () => void;
   onConfirm: (pin: string, exitType?: "DESCANSO" | "FIN_TURNO") => void;
-  type: "ENTRADA" | "SALIDA";
+  type: "ENTRADA" | "SALIDA" | "AJUSTES";
 }
 
 const PinModal: React.FC<PinModalProps> = ({
@@ -30,7 +30,7 @@ const PinModal: React.FC<PinModalProps> = ({
     setPin(newPin);
 
     if (newPin.length === 4) {
-      if (type === 'SALIDA') {
+      if (type === "SALIDA") {
         setShowExitOptions(true); // Mostrar opciones de salida
       } else {
         onConfirm(newPin); // Confirmar directamente
@@ -161,7 +161,7 @@ const PinModal: React.FC<PinModalProps> = ({
         <View style={styles.modalContainer}>
           <View style={styles.header}>
             <Text style={styles.title}>
-              {type === "ENTRADA" ? "Registrar Llegada" : "Registrar Salida"}
+              {type === "ENTRADA" ? "Registrar Llegada" : type === "SALIDA" ? "Registrar Salida" : "Ajustes"}
             </Text>
             <TouchableOpacity onPress={handleCancel} style={styles.closeButton}>
               <Text style={styles.closeButtonText}>✕</Text>
