@@ -153,14 +153,14 @@ class ApiService {
     }
   }
 
-  // Guarda el tema del usuario en la base de datos
-  async updateTheme(userId, theme) {
+  // Guarda el tema de la tienda en la base de datos
+  async updateTheme(storeId, theme) {
     try {
       const response = await this.makeRequest('/FuncionesBD.php', {
         method: 'POST',
         body: JSON.stringify({
           tipo_operacion: 'update_theme',
-          user_id: userId,
+          store_id: storeId,
           theme: theme
         })
       });
@@ -171,14 +171,14 @@ class ApiService {
     }
   }
 
-  // Obtiene el tema guardado del usuario en la base de datos
-  async getTheme(userId) {
+  // Obtiene el tema guardado de la tienda en la base de datos
+  async getTheme(storeId) {
     try {
       const response = await this.makeRequest('/FuncionesBD.php', {
         method: 'POST',
         body: JSON.stringify({
           tipo_operacion: 'get_theme',
-          user_id: userId
+          store_id: storeId
         })
       });
       return response;

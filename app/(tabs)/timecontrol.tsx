@@ -50,11 +50,11 @@ export default function TimeControlScreen() {
     }
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
 
-    // Carga los fichajes y el tema guardado del usuario en la base de datos
+    // Carga los fichajes y el tema guardado de la tienda en la base de datos
     const loadInitialData = async () => {
       loadTimeRecords();
-      if (user?.id) {
-        const themeResponse = await apiService.getTheme(user.id);
+      if (user?.storeId) {
+        const themeResponse = await apiService.getTheme(user.storeId);
         if (themeResponse && themeResponse.success && themeResponse.theme) {
           setTheme(themeResponse.theme);
         }
@@ -79,8 +79,8 @@ export default function TimeControlScreen() {
   const selectTheme = async (newTheme: "claro" | "oscuro" | "azul") => {
     setTheme(newTheme);
 
-    if (user?.id) {
-      await apiService.updateTheme(user.id, newTheme);
+    if (user?.storeId) {
+      await apiService.updateTheme(user.storeId, newTheme);
     }
   };
 
