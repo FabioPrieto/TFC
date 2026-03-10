@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import LoadingSpinner from "../../components/LoadingSpinner";
@@ -46,7 +46,18 @@ export default function TimeControlScreen() {
       if (tabList) (tabList as HTMLElement).style.display = "none";
     }
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    loadTimeRecords();
+
+    const loadInitialData = async () => {
+      loadTimeRecords();
+      if (user?.id) {
+        const themeResponse = await apiService.getTheme(user.id);
+        if (themeResponse && themeResponse.success && themeResponse.theme) {
+          setTheme(themeResponse.theme);
+        }
+      }
+    };
+
+    loadInitialData();
     return () => clearInterval(timer);
   }, []);
 
@@ -60,9 +71,13 @@ export default function TimeControlScreen() {
     }
   };
 
-  const selectTheme = (newTheme: "claro" | "oscuro" | "azul") => {
+  const selectTheme = async (newTheme: "claro" | "oscuro" | "azul") => {
     setTheme(newTheme);
     setShowThemeMenu(false);
+
+    if (user?.id) {
+      await apiService.updateTheme(user.id, newTheme);
+    }
   };
 
   const handleClockIn = () => {
@@ -111,7 +126,7 @@ export default function TimeControlScreen() {
     setShowPinModal(false);
     setFarewellMessage("");
     try {
-      let response;
+      let response: any;
       if (modalType === "ENTRADA") {
         response = await apiService.clockIn(user?.id, user?.storeId, pin);
         setIsSuccess(response.success);

@@ -153,7 +153,41 @@ class ApiService {
     }
   }
 
-  // Test connection method
+  // --- NUEVAS FUNCIONES PARA GUARDAR Y LEER EL TEMA ---
+  async updateTheme(userId, theme) {
+    try {
+      const response = await this.makeRequest('/FuncionesBD.php', {
+        method: 'POST',
+        body: JSON.stringify({
+          tipo_operacion: 'update_theme',
+          user_id: userId,
+          theme: theme
+        })
+      });
+      return response;
+    } catch (error) {
+      console.error('Error saving theme:', error);
+      return { success: false };
+    }
+  }
+
+  async getTheme(userId) {
+    try {
+      const response = await this.makeRequest('/FuncionesBD.php', {
+        method: 'POST',
+        body: JSON.stringify({
+          tipo_operacion: 'get_theme',
+          user_id: userId
+        })
+      });
+      return response;
+    } catch (error) {
+      console.error('Error getting theme:', error);
+      return { success: false, theme: 'claro' };
+    }
+  }
+
+  // Método de conexión de prueba
   async testConnection() {
     try {
       const response = await this.makeRequest('/FuncionesBD.php', {
