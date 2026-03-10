@@ -355,6 +355,7 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: "rgba(255,255,255,0.2)",
     borderRadius: 25,
+    marginRight: 10,
   },
   modalOverlay: {
     flex: 1,
@@ -427,12 +428,13 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "flex-start",
     alignItems: "center",
+    marginTop: 150,
   },
   dateText: {
     fontSize: 30,
-    marginBottom: 200,
+    marginBottom: 0,
     textTransform: "capitalize",
     fontWeight: "600",
   },
@@ -441,21 +443,22 @@ const styles = StyleSheet.create({
     fontWeight: "300",
     fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
     letterSpacing: 2,
+    lineHeight: 450,
   },
   buttonContainer: {
     flexDirection: "row",
-    gap: 30,
-    marginTop: 200,
-    paddingHorizontal: 30,
+    gap: 40,
+    marginTop: 60,
+    paddingHorizontal: 80,
     width: "100%",
   },
   button: {
     flex: 1,
-    paddingVertical: 20,
+    paddingVertical: 35,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    elevation: 6,
+    elevation: 8,
   },
   arrivalButton: {
     backgroundColor: "#667eea",
@@ -465,8 +468,8 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 32,
+    fontWeight: "normal",
   },
 
   // Estilos para el modal de cerrar sesión
