@@ -1,4 +1,4 @@
-import { router } from 'expo-router'; // 1. IMPORT AÑADIDO
+import { router } from 'expo-router';
 import React, { useEffect, useState } from "react";
 import {
   ImageBackground,
@@ -8,8 +8,9 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PinModal from "../../components/PinModal";
@@ -23,14 +24,15 @@ export default function TimeControlScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [timeRecords, setTimeRecords] = useState([]);
   const [showPinModal, setShowPinModal] = useState(false);
-  const [modalType, setModalType] = useState<"ENTRADA" | "SALIDA">("ENTRADA");
+  const [modalType, setModalType] = useState<"ENTRADA" | "SALIDA" | "AJUSTES">("ENTRADA");
 
-  // 2. ESTADO PARA EL MODAL DE CERRAR SESIÓN YA ESTABA (lo mantengo)
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  // Estados para el tema y el menú desplegable
+  // Estado para el modal de ajustes (tema y cerrar sesión)
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+
+  // Estado para el tema actual
   const [theme, setTheme] = useState<"claro" | "oscuro" | "azul">("claro");
-  const [showThemeMenu, setShowThemeMenu] = useState(false);
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [confirmationType, setConfirmationType] = useState<"ENTRADA" | "SALIDA_DESCANSO" | "SALIDA_FIN_TURNO" | "VUELTA_DESCANSO" | "ERROR">("ENTRADA");
@@ -39,7 +41,6 @@ export default function TimeControlScreen() {
 
   const { user, logout } = useAuth();
 
-  // ST_NAME dinámico desde la base de datos (según tu tabla STORE)
   const storeNameDisplay = user?.name || "ST_NAME";
 
   useEffect(() => {
@@ -48,7 +49,19 @@ export default function TimeControlScreen() {
       if (tabList) (tabList as HTMLElement).style.display = "none";
     }
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    loadTimeRecords();
+
+    // Carga los fichajes y el tema guardado de la tienda en la base de datos
+    const loadInitialData = async () => {
+      loadTimeRecords();
+      if (user?.storeId) {
+        const themeResponse = await apiService.getTheme(user.storeId);
+        if (themeResponse && themeResponse.success && themeResponse.theme) {
+          setTheme(themeResponse.theme);
+        }
+      }
+    };
+
+    loadInitialData();
     return () => clearInterval(timer);
   }, []);
 
@@ -58,25 +71,32 @@ export default function TimeControlScreen() {
       const response = await apiService.getTimeRecords(user.id, user.storeId);
       if (response.success) setTimeRecords(response.records || []);
     } catch (error) {
-      console.error("Error loading time records:", error);
+      console.error("Error al cargar los fichajes:", error);
     }
   };
 
-  const selectTheme = (newTheme: "claro" | "oscuro" | "azul") => {
+  // Cambia el tema y lo guarda en la base de datos
+  const selectTheme = async (newTheme: "claro" | "oscuro" | "azul") => {
     setTheme(newTheme);
-    setShowThemeMenu(false);
+
+    if (user?.storeId) {
+      await apiService.updateTheme(user.storeId, newTheme);
+    }
   };
 
+  // Abre el PinModal para registrar llegada
   const handleClockIn = () => {
     setModalType("ENTRADA");
     setShowPinModal(true);
   };
 
+  // Abre el PinModal para registrar salida
   const handleClockOut = () => {
     setModalType("SALIDA");
     setShowPinModal(true);
   };
 
+  // Calcula el mensaje de despedida según el próximo día laborable
   const calcularMensajeDespedida = async () => {
     try {
       const festivos = await apiService.getFestivos(user?.storeId);
@@ -100,7 +120,7 @@ export default function TimeControlScreen() {
         if (i === 1) {
           return "¡Nos vemos mañana!";
         }
-        return `¡Nos vemos el ${diasSemana[diaSemana]}!`;
+        return `Feliz festivo, ${user?.name}`;
       }
       return "";
     } catch {
@@ -108,12 +128,27 @@ export default function TimeControlScreen() {
     }
   };
 
+  // Se ejecuta al confirmar el PIN (entrada, salida o ajustes)
   const handlePinConfirm = async (pin: string, exitType?: "DESCANSO" | "FIN_TURNO") => {
-    setIsLoading(true);
     setShowPinModal(false);
+
+    // Si es ajustes, validamos el PIN contra el servidor y abrimos ajustes
+    if (modalType === "AJUSTES") {
+      const response = await apiService.authenticateStore(user?.name, pin);
+      if (response.success) {
+        setShowSettingsModal(true);
+      } else {
+        setIsSuccess(false);
+        setConfirmationType("ERROR");
+        setShowConfirmationModal(true);
+      }
+      return;
+    }
+
+    setIsLoading(true);
     setFarewellMessage("");
     try {
-      let response;
+      let response: any;
       if (modalType === "ENTRADA") {
         response = await apiService.clockIn(user?.id, user?.storeId, pin);
         setIsSuccess(response.success);
@@ -126,7 +161,6 @@ export default function TimeControlScreen() {
           if (exitType === "DESCANSO") {
             setConfirmationType("SALIDA_DESCANSO");
           } else {
-            // Calcular mensaje de despedida ANTES de mostrar el modal
             const mensaje = await calcularMensajeDespedida();
             setFarewellMessage(mensaje);
             setConfirmationType("SALIDA_FIN_TURNO");
@@ -146,12 +180,19 @@ export default function TimeControlScreen() {
     }
   };
 
+  // Abre el PinModal para acceder a ajustes
+  const handleSettingsPress = () => {
+    setModalType("AJUSTES");
+    setShowPinModal(true);
+  };
+
   // Abre el modal de Cerrar Sesión
   const handleLogout = () => {
+    setShowSettingsModal(false);
     setShowLogoutModal(true);
   };
 
-  // Se ejecuta al confirmar en el modal
+  // Se ejecuta al confirmar el cierre de sesión
   const confirmLogout = () => {
     setShowLogoutModal(false);
     if (logout) logout();
@@ -160,6 +201,7 @@ export default function TimeControlScreen() {
 
   if (isLoading) return <LoadingSpinner />;
 
+  // Colores según el tema seleccionado
   const appBackgroundColor = theme === "claro" ? "transparent" : theme === "oscuro" ? "#1a1a1a" : "#1e3a8a";
   const headerBackgroundColor = theme === "claro" ? "#667eea" : "rgba(255,255,255,0.1)";
   const textColor = theme === "claro" ? "#333" : "#fff";
@@ -178,32 +220,41 @@ export default function TimeControlScreen() {
           <View style={[styles.header, { backgroundColor: headerBackgroundColor }]}>
             <Text style={styles.storeName}>{storeNameDisplay}</Text>
 
-            <View style={styles.headerButtons}>
-              <TouchableOpacity onPress={() => setShowThemeMenu(true)} style={styles.themeButton}>
-                <Text style={styles.headerBtnText}>Tema: {theme.toUpperCase()} ▼</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-                <Text style={styles.headerBtnText}>Cerrar Sesión</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity onPress={handleSettingsPress} style={styles.settingsButton}>
+              <Ionicons name="settings-sharp" size={24} color="white" />
+            </TouchableOpacity>
           </View>
 
-          {/* Menú desplegable */}
-          <Modal visible={showThemeMenu} transparent animationType="fade">
-            <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowThemeMenu(false)}>
-              <View style={styles.dropdown}>
-                <TouchableOpacity style={styles.dropdownItem} onPress={() => selectTheme("claro")}>
-                  <Text style={styles.dropdownText}>⚪ Claro (Ondas)</Text>
+          {/* Modal de ajustes */}
+          <Modal visible={showSettingsModal} transparent animationType="fade" onRequestClose={() => setShowSettingsModal(false)}>
+            <View style={styles.modalOverlay}>
+              <View style={styles.settingsModalBox}>
+                <Text style={styles.settingsModalTitle}>Ajustes</Text>
+
+                <Text style={styles.settingsSectionTitle}>Tema</Text>
+                <TouchableOpacity style={styles.settingsItem} onPress={() => selectTheme("claro")}>
+                  <Text style={styles.settingsItemText}>⚪ Claro (Ondas)</Text>
+                  {theme === "claro" && <Ionicons name="checkmark" size={20} color="#667eea" />}
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.dropdownItem} onPress={() => selectTheme("oscuro")}>
-                  <Text style={styles.dropdownText}>⚫ Oscuro</Text>
+                <TouchableOpacity style={styles.settingsItem} onPress={() => selectTheme("oscuro")}>
+                  <Text style={styles.settingsItemText}>⚫ Oscuro</Text>
+                  {theme === "oscuro" && <Ionicons name="checkmark" size={20} color="#667eea" />}
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.dropdownItem, { borderBottomWidth: 0 }]} onPress={() => selectTheme("azul")}>
-                  <Text style={styles.dropdownText}>🔵 Azul Noche</Text>
+                <TouchableOpacity style={styles.settingsItem} onPress={() => selectTheme("azul")}>
+                  <Text style={styles.settingsItemText}>🔵 Azul Noche</Text>
+                  {theme === "azul" && <Ionicons name="checkmark" size={20} color="#667eea" />}
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.settingsLogoutBtn} onPress={handleLogout}>
+                  <Ionicons name="log-out-outline" size={20} color="white" />
+                  <Text style={styles.settingsLogoutText}>Cerrar Sesión</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.settingsCloseBtn} onPress={() => setShowSettingsModal(false)}>
+                  <Text style={styles.settingsCloseText}>Cerrar</Text>
                 </TouchableOpacity>
               </View>
-            </TouchableOpacity>
+            </View>
           </Modal>
 
           <View style={styles.content}>
@@ -226,7 +277,7 @@ export default function TimeControlScreen() {
           </View>
 
           <PinModal visible={showPinModal} onClose={() => setShowPinModal(false)} onConfirm={handlePinConfirm} type={modalType} />
-          <ConfirmationModal visible={showConfirmationModal} onClose={() => setShowConfirmationModal(false)} type={confirmationType} isSuccess={isSuccess} extraMessage={farewellMessage} />
+          <ConfirmationModal visible={showConfirmationModal} onClose={() => setShowConfirmationModal(false)} type={confirmationType} isSuccess={isSuccess} extraMessage={farewellMessage} userName={user?.name}/>
         </SafeAreaView>
 
         {/* Modal de Cerrar Sesión */}
@@ -294,36 +345,17 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     elevation: 8,
   },
-  headerButtons: {
-    flexDirection: "row",
-    gap: 10,
-  },
   storeName: {
     fontSize: 24,
     fontWeight: "bold",
     color: "white",
     flex: 1,
   },
-  themeButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+  settingsButton: {
+    padding: 10,
     backgroundColor: "rgba(255,255,255,0.2)",
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "white",
-  },
-  logoutButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    backgroundColor: "rgba(255,255,255,0.1)",
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: "rgba(255,255,255,0.3)",
-  },
-  headerBtnText: {
-    color: "white",
-    fontWeight: "600",
-    fontSize: 12,
+    borderRadius: 25,
+    marginRight: 10,
   },
   modalOverlay: {
     flex: 1,
@@ -331,53 +363,102 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  dropdown: {
+  settingsModalBox: {
     backgroundColor: "white",
     borderRadius: 15,
-    width: 220,
-    padding: 5,
+    width: "85%",
+    maxWidth: 400,
+    padding: 25,
     elevation: 10,
   },
-  dropdownItem: {
-    padding: 15,
+  settingsModalTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#333",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  settingsSectionTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#999",
+    textTransform: "uppercase",
+    marginBottom: 10,
+  },
+  settingsItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
   },
-  dropdownText: {
+  settingsItemText: {
     fontSize: 16,
     color: "#333",
     fontWeight: "500",
   },
-  content: {
-    flex: 1,
+  settingsLogoutBtn: {
+    flexDirection: "row",
+    alignItems: "center",
     justifyContent: "center",
+    gap: 8,
+    marginTop: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+    backgroundColor: "#e53e3e",
+  },
+  settingsLogoutText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  settingsCloseBtn: {
+    marginTop: 10,
+    paddingVertical: 12,
+    borderRadius: 8,
+    backgroundColor: "rgba(100,100,100,0.15)",
     alignItems: "center",
   },
+  settingsCloseText: {
+    color: "#666",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  content: {
+    flex: 1,
+    justifyContent: "flex-start",
+    alignItems: "center",
+    marginTop: 150,
+  },
   dateText: {
-    fontSize: 22,
-    marginBottom: 8,
+    fontSize: 30,
+    marginBottom: 0,
     textTransform: "capitalize",
     fontWeight: "600",
   },
   timeText: {
-    fontSize: 80,
+    fontSize: 200,
     fontWeight: "300",
     fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
     letterSpacing: 2,
+    lineHeight: 450,
   },
   buttonContainer: {
     flexDirection: "row",
-    gap: 20,
-    marginTop: 40,
+    gap: 40,
+    marginTop: 60,
+    paddingHorizontal: 80,
     width: "100%",
   },
   button: {
     flex: 1,
-    paddingVertical: 20,
+    paddingVertical: 35,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    elevation: 6,
+    elevation: 8,
   },
   arrivalButton: {
     backgroundColor: "#667eea",
@@ -387,11 +468,11 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 32,
+    fontWeight: "normal",
   },
 
-  // Estilos para el modal de Cerrar Sesión
+  // Estilos para el modal de cerrar sesión
   logoutModalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.6)",
