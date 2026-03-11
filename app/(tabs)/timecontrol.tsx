@@ -271,12 +271,12 @@ export default function TimeControlScreen() {
             </Text>
 
             <View style={[styles.buttonContainer, { gap: responsivo(12, 40), marginTop: responsivo(40, 120), paddingHorizontal: responsivo(16, 80) }]}>
-              <TouchableOpacity style={[styles.button, styles.arrivalButton, { paddingVertical: responsivo(16, 35) }]} onPress={handleClockIn}>
-                <Text style={[styles.buttonText, { fontSize: responsivo(20, 40) }]}>Llegada</Text>
+              <TouchableOpacity style={[styles.button, styles.arrivalButton, { paddingVertical: responsivo(22, 45) }]} onPress={handleClockIn}>
+                <Text style={[styles.buttonText, { fontSize: responsivo(30, 60), fontWeight: "bold" }]}>Llegada</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={[styles.button, styles.departureButton, { paddingVertical: responsivo(16, 35) }]} onPress={handleClockOut}>
-                <Text style={[styles.buttonText, { fontSize: responsivo(20, 40) }]}>Salida</Text>
+              <TouchableOpacity style={[styles.button, styles.departureButton, { paddingVertical: responsivo(22, 45) }]} onPress={handleClockOut}>
+                <Text style={[styles.buttonText, { fontSize: responsivo(30, 60), fontWeight: "bold" }]}>Salida</Text>
               </TouchableOpacity>
             </View>
           </View>
