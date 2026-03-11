@@ -22,8 +22,8 @@ const backgroundImage = require("../../assets/backgrounds/fondo_1_tpv.jpg");
 
 export default function TimeControlScreen() {
   const { width } = useWindowDimensions();
-  // Escala proporcional: 1 en pantallas de 1024px, se reduce proporcionalmente
   const scale = Math.min(width / 1024, 1);
+  const responsivo = (minimo: number, ideal: number) => Math.max(minimo, ideal * scale);
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
@@ -222,11 +222,11 @@ export default function TimeControlScreen() {
         imageStyle={theme !== "claro" ? { opacity: 0 } : { opacity: 1 }}
       >
         <SafeAreaView style={styles.container}>
-          <View style={[styles.header, { backgroundColor: headerBackgroundColor, padding: Math.max(10, 15 * scale) }]}>
-            <Text style={[styles.storeName, { fontSize: Math.max(16, 24 * scale) }]}>{storeNameDisplay}</Text>
+          <View style={[styles.header, { backgroundColor: headerBackgroundColor, padding: responsivo(10, 15) }]}>
+            <Text style={[styles.storeName, { fontSize: responsivo(16, 24) }]}>{storeNameDisplay}</Text>
 
             <TouchableOpacity onPress={handleSettingsPress} style={styles.settingsButton}>
-              <Ionicons name="settings-sharp" size={Math.max(18, 24 * scale)} color="white" />
+              <Ionicons name="settings-sharp" size={responsivo(18, 24)} color="white" />
             </TouchableOpacity>
           </View>
 
@@ -262,21 +262,21 @@ export default function TimeControlScreen() {
             </View>
           </Modal>
 
-          <View style={[styles.content, { marginTop: Math.max(30, 150 * scale) }]}>
-            <Text style={[styles.dateText, { color: textColor, fontSize: Math.max(16, 30 * scale) }]}>
+          <View style={[styles.content, { marginTop: responsivo(30, 150) }]}>
+            <Text style={[styles.dateText, { color: textColor, fontSize: responsivo(18, 40) }]}>
               {currentTime.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}
             </Text>
-            <Text style={[styles.timeText, { color: clockColor, fontSize: Math.max(60, 200 * scale), lineHeight: Math.max(80, 450 * scale) }]}>
+            <Text style={[styles.timeText, { color: clockColor, fontSize: responsivo(80, 300), lineHeight: responsivo(100, 360) }]}>
               {currentTime.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: false })}
             </Text>
 
-            <View style={[styles.buttonContainer, { gap: Math.max(12, 40 * scale), marginTop: Math.max(20, 60 * scale), paddingHorizontal: Math.max(16, 80 * scale) }]}>
-              <TouchableOpacity style={[styles.button, styles.arrivalButton, { paddingVertical: Math.max(14, 35 * scale) }]} onPress={handleClockIn}>
-                <Text style={[styles.buttonText, { fontSize: Math.max(16, 32 * scale) }]}>Llegada</Text>
+            <View style={[styles.buttonContainer, { gap: responsivo(12, 40), marginTop: responsivo(40, 120), paddingHorizontal: responsivo(16, 80) }]}>
+              <TouchableOpacity style={[styles.button, styles.arrivalButton, { paddingVertical: responsivo(16, 35) }]} onPress={handleClockIn}>
+                <Text style={[styles.buttonText, { fontSize: responsivo(20, 40) }]}>Llegada</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={[styles.button, styles.departureButton, { paddingVertical: Math.max(14, 35 * scale) }]} onPress={handleClockOut}>
-                <Text style={[styles.buttonText, { fontSize: Math.max(16, 32 * scale) }]}>Salida</Text>
+              <TouchableOpacity style={[styles.button, styles.departureButton, { paddingVertical: responsivo(16, 35) }]} onPress={handleClockOut}>
+                <Text style={[styles.buttonText, { fontSize: responsivo(20, 40) }]}>Salida</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -437,7 +437,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   dateText: {
-    marginBottom: 0,
+    marginBottom: 50,
     textTransform: "capitalize",
     fontWeight: "600",
   },
