@@ -4,12 +4,13 @@ import {
   ImageBackground,
   Modal,
   Platform,
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import LoadingSpinner from "../../components/LoadingSpinner";
@@ -20,6 +21,10 @@ import { useAuth } from "../context/AuthContext";
 const backgroundImage = require("../../assets/backgrounds/fondo_1_tpv.jpg");
 
 export default function TimeControlScreen() {
+  const { width } = useWindowDimensions();
+  // Escala proporcional: 1 en pantallas de 1024px, se reduce proporcionalmente
+  const scale = Math.min(width / 1024, 1);
+
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
   const [timeRecords, setTimeRecords] = useState([]);
@@ -217,11 +222,11 @@ export default function TimeControlScreen() {
         imageStyle={theme !== "claro" ? { opacity: 0 } : { opacity: 1 }}
       >
         <SafeAreaView style={styles.container}>
-          <View style={[styles.header, { backgroundColor: headerBackgroundColor }]}>
-            <Text style={styles.storeName}>{storeNameDisplay}</Text>
+          <View style={[styles.header, { backgroundColor: headerBackgroundColor, padding: Math.max(10, 15 * scale) }]}>
+            <Text style={[styles.storeName, { fontSize: Math.max(16, 24 * scale) }]}>{storeNameDisplay}</Text>
 
             <TouchableOpacity onPress={handleSettingsPress} style={styles.settingsButton}>
-              <Ionicons name="settings-sharp" size={24} color="white" />
+              <Ionicons name="settings-sharp" size={Math.max(18, 24 * scale)} color="white" />
             </TouchableOpacity>
           </View>
 
@@ -257,21 +262,21 @@ export default function TimeControlScreen() {
             </View>
           </Modal>
 
-          <View style={styles.content}>
-            <Text style={[styles.dateText, { color: textColor }]}>
+          <View style={[styles.content, { marginTop: Math.max(30, 150 * scale) }]}>
+            <Text style={[styles.dateText, { color: textColor, fontSize: Math.max(16, 30 * scale) }]}>
               {currentTime.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}
             </Text>
-            <Text style={[styles.timeText, { color: clockColor }]}>
+            <Text style={[styles.timeText, { color: clockColor, fontSize: Math.max(60, 200 * scale), lineHeight: Math.max(80, 450 * scale) }]}>
               {currentTime.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: false })}
             </Text>
 
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={[styles.button, styles.arrivalButton]} onPress={handleClockIn}>
-                <Text style={styles.buttonText}>Llegada</Text>
+            <View style={[styles.buttonContainer, { gap: Math.max(12, 40 * scale), marginTop: Math.max(20, 60 * scale), paddingHorizontal: Math.max(16, 80 * scale) }]}>
+              <TouchableOpacity style={[styles.button, styles.arrivalButton, { paddingVertical: Math.max(14, 35 * scale) }]} onPress={handleClockIn}>
+                <Text style={[styles.buttonText, { fontSize: Math.max(16, 32 * scale) }]}>Llegada</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={[styles.button, styles.departureButton]} onPress={handleClockOut}>
-                <Text style={styles.buttonText}>Salida</Text>
+              <TouchableOpacity style={[styles.button, styles.departureButton, { paddingVertical: Math.max(14, 35 * scale) }]} onPress={handleClockOut}>
+                <Text style={[styles.buttonText, { fontSize: Math.max(16, 32 * scale) }]}>Salida</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -430,31 +435,23 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-start",
     alignItems: "center",
-    marginTop: 150,
   },
   dateText: {
-    fontSize: 30,
     marginBottom: 0,
     textTransform: "capitalize",
     fontWeight: "600",
   },
   timeText: {
-    fontSize: 200,
     fontWeight: "300",
     fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
     letterSpacing: 2,
-    lineHeight: 450,
   },
   buttonContainer: {
     flexDirection: "row",
-    gap: 40,
-    marginTop: 60,
-    paddingHorizontal: 80,
     width: "100%",
   },
   button: {
     flex: 1,
-    paddingVertical: 35,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
@@ -468,7 +465,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
-    fontSize: 32,
     fontWeight: "normal",
   },
 
