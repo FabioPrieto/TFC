@@ -272,7 +272,7 @@ export default function TimeControlScreen() {
                 </TouchableOpacity>
 
                 <Text style={[styles.settingsSectionTitle, { marginTop: 20 }]}>{t.idioma}</Text>
-                {(["es", "ca", "eu", "gl"] as Language[]).map((lang) => (
+                {(["es", "ca", "eu", "gl", "en"] as Language[]).map((lang) => (
                   <TouchableOpacity key={lang} style={styles.settingsItem} onPress={() => selectLanguage(lang)}>
                     <Text style={styles.settingsItemText}>{languageNames[language][lang]}</Text>
                     {language === lang && <Ionicons name="checkmark" size={20} color="#667eea" />}
@@ -293,7 +293,7 @@ export default function TimeControlScreen() {
 
           <View style={[styles.content, { marginTop: responsivo(30, 150) }]}>
             <Text style={[styles.dateText, { color: textColor, fontSize: responsivo(18, 40), marginBottom: responsivo(20, 120) }]}>
-                {`${t.diasSemana[currentTime.getDay()]}, ${currentTime.getDate()} de ${t.meses[currentTime.getMonth()]}`}
+                {t.formatoFecha(t.diasSemana[currentTime.getDay()], currentTime.getDate(), t.meses[currentTime.getMonth()])}
               </Text>
             
             <Text style={[styles.timeText, { color: clockColor, fontSize: responsivo(45, 290), lineHeight: responsivo(55, 360), marginBottom: responsivo(20, 60) }]}>

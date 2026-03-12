@@ -1,5 +1,5 @@
 // Idiomas disponibles en la aplicación
-export type Language = "es" | "ca" | "eu" | "gl";
+export type Language = "es" | "ca" | "eu" | "gl" | "en";
 
 // Traducciones de la interfaz para cada idioma (incluye fecha manual con diasSemana/meses)
 export const translations: Record<Language, Record<string, any>> = {
@@ -76,6 +76,7 @@ export const translations: Record<Language, Record<string, any>> = {
     // Date
     diasSemana: ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"],
     meses: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+    formatoFecha: (dia: string, num: number, mes: string) => `${dia}, ${num} de ${mes}`,
   },
 
   ca: {
@@ -115,6 +116,7 @@ export const translations: Record<Language, Record<string, any>> = {
       `Excel·lent${name}! Hora de donar el millor de tu`,
       `Genial${name}! Que tinguis un dia productiu`,
       `Benvingut${name}! El teu torn està registrat`,
+      `Som-hi${name}! La teva jornada ha començat`,
     ],
     descansoMessages: [
       "Gaudeix del teu descans! T'ho mereixes",
@@ -123,6 +125,7 @@ export const translations: Record<Language, Record<string, any>> = {
       "Descans registrat! Relaxa't una mica",
       "Genial! Temps de pausa merescuda",
       "Excel·lent! Moment de desconnectar",
+      "Bon profit!",
     ],
     vueltaMessages: [
       "De tornada! Continuem amb energia",
@@ -131,6 +134,8 @@ export const translations: Record<Language, Record<string, any>> = {
       "Excel·lent! Hora de reprendre les tasques",
       "Fantàstic! Seguim sent productius",
       "Benvingut de tornada! A per totes",
+      "Tornem-hi!",
+      "Pila carregada!",
     ],
     finTurnoMessages: (name: string) => [
       `Torn completat${name}! Que descansis bé`,
@@ -139,12 +144,14 @@ export const translations: Record<Language, Record<string, any>> = {
       `Perfecte${name}! Fi de torn registrat`,
       `Gran dia de treball${name}! Ens veiem aviat`,
       `Fantàstic${name}! Que tinguis bona tarda/nit`,
+      `Feina feta té bon aire${name}!`,
     ],
     accionRegistrada: "Acció registrada correctament",
     nosVemosMañana: "Ens veiem demà!",
     felizFestivo: (name?: string) => `Bon festiu, ${name}`,
     diasSemana: ["diumenge", "dilluns", "dimarts", "dimecres", "dijous", "divendres", "dissabte"],
     meses: ["gener", "febrer", "març", "abril", "maig", "juny", "juliol", "agost", "setembre", "octubre", "novembre", "desembre"],
+    formatoFecha: (dia: string, num: number, mes: string) => `${dia}, ${num} de ${mes}`,
   },
 
   eu: {
@@ -184,6 +191,8 @@ export const translations: Record<Language, Record<string, any>> = {
       `Zoragarri${name}! Zure onena emateko ordua`,
       `Primeran${name}! Egun produktiboa izan dezazula`,
       `Ongi etorri${name}! Zure txanda erregistratuta dago`,
+      `Egun on${name}! Aupa!`,
+      `Ekin lanari${name}! Lanean fitxatuta zaude`,
     ],
     descansoMessages: [
       "Gozatu zure atsedenaz! Merezi duzu",
@@ -192,6 +201,7 @@ export const translations: Record<Language, Record<string, any>> = {
       "Atsedena erregistratuta! Erlaxatu pixka bat",
       "Primeran! Merezitako pausa denbora",
       "Zoragarri! Deskonektatzeko unea",
+      "On egin! Merezi duzu eta",
     ],
     vueltaMessages: [
       "Itzuli da! Jarraitu dezagun energiarekin",
@@ -200,6 +210,8 @@ export const translations: Record<Language, Record<string, any>> = {
       "Zoragarri! Atazak berriro hartzeko ordua",
       "Fantastiko! Jarrai dezagun produktiboak izaten",
       "Ongi etorri berriro! Aurrera goaz",
+      "Berriro martxan!",
+      "Indarberrituta!",
     ],
     finTurnoMessages: (name: string) => [
       `Txanda amaituta${name}! Atseden ona izan`,
@@ -208,12 +220,14 @@ export const translations: Record<Language, Record<string, any>> = {
       `Bikain${name}! Txanda amaiera erregistratuta`,
       `Lan egun handia${name}! Laster ikusiko gara`,
       `Fantastiko${name}! Arratsalde/gau ona izan`,
+      `Agur eta ondo izan${name}!`,
     ],
     accionRegistrada: "Ekintza ongi erregistratuta",
     nosVemosMañana: "Bihar arte!",
     felizFestivo: (name?: string) => `Jai zoriontsua, ${name}`,
     diasSemana: ["igandea", "astelehena", "asteartea", "asteazkena", "osteguna", "ostirala", "larunbata"],
     meses: ["urtarrila", "otsaila", "martxoa", "apirila", "maiatza", "ekaina", "uztaila", "abuztua", "iraila", "urria", "azaroa", "abendua"],
+    formatoFecha: (dia: string, num: number, mes: string) => `${dia}, ${mes}ren ${num}a`,
   },
 
   gl: {
@@ -261,6 +275,7 @@ export const translations: Record<Language, Record<string, any>> = {
       "¡Descanso rexistrado! Reláxate un pouco",
       "¡Xenial! Tempo de pausa merecida",
       "¡Excelente! Momento de desconectar",
+      "Bo proveito!",
     ],
     vueltaMessages: [
       "¡De volta! Continuemos con enerxía",
@@ -269,6 +284,7 @@ export const translations: Record<Language, Record<string, any>> = {
       "¡Excelente! Hora de retomar as tarefas",
       "¡Fantástico! Sigamos sendo produtivos",
       "¡Benvido de volta! A por todas",
+      "De volta á carga!",
     ],
     finTurnoMessages: (name: string) => [
       `¡Quenda completada${name}! Que descanses ben`,
@@ -277,19 +293,92 @@ export const translations: Record<Language, Record<string, any>> = {
       `¡Perfecto${name}! Fin de quenda rexistrado`,
       `¡Gran día de traballo${name}! Vémonos pronto`,
       `¡Fantástico${name}! Que teñas boa tarde/noite`,
+      `Vai con sentidiño${name}!`,
     ],
     accionRegistrada: "Acción rexistrada correctamente",
     nosVemosMañana: "¡Vémonos mañá!",
     felizFestivo: (name?: string) => `Feliz festivo, ${name}`,
     diasSemana: ["domingo", "luns", "martes", "mércores", "xoves", "venres", "sábado"],
     meses: ["xaneiro", "febreiro", "marzo", "abril", "maio", "xuño", "xullo", "agosto", "setembro", "outubro", "novembro", "decembro"],
+    formatoFecha: (dia: string, num: number, mes: string) => `${dia}, ${num} de ${mes}`,
+  },
+
+  en: {
+    llegada: "Clock In",
+    salida: "Clock Out",
+    ajustes: "Settings",
+    tema: "Theme",
+    idioma: "Language",
+    claro: "Light (Waves)",
+    oscuro: "Dark",
+    azulNoche: "Night Blue",
+    cerrarSesion: "Log Out",
+    cerrar: "Close",
+    cerrarSesionTitulo: "Log Out",
+    cerrarSesionTexto: (name: string) => `Are you sure you want to log out of ${name}?`,
+    cancelar: "Cancel",
+    siSalir: "Yes, log out",
+    registrarLlegada: "Clock In",
+    registrarSalida: "Clock Out",
+    instruccionPin: "Enter your 4-digit PIN",
+    tipoSalida: "Exit type:",
+    salidaDescanso: "Break",
+    finTurno: "End of Shift",
+    volver: "Back",
+    continuar: "Continue",
+    errorMessages: [
+      "Oops! Could not register the action",
+      "System error, please try again",
+      "Could not connect to the server",
+      "Incorrect PIN or registration error",
+      "Something went wrong, please retry",
+    ],
+    entradaMessages: (name: string) => [
+      `Good morning${name}! Shift started successfully`,
+      `Perfect${name}! You are now clocked in`,
+      `Ready${name}! Your workday has begun`,
+      `Excellent${name}! Time to give your best`,
+      `Great${name}! Have a productive day`,
+      `Welcome${name}! Your shift is registered`,
+    ],
+    descansoMessages: [
+      "Enjoy your break! You deserve it",
+      "Break time! Recharge your energy",
+      "Perfect! Take a breather",
+      "Break registered! Relax a bit",
+      "Great! Time for a well-deserved pause",
+      "Excellent! Time to disconnect",
+    ],
+    vueltaMessages: [
+      "Welcome back! Let's keep going",
+      "Perfect! Ready to continue working",
+      "Great! Return to work registered",
+      "Excellent! Time to get back to it",
+      "Fantastic! Let's stay productive",
+      "Welcome back! Let's go for it",
+    ],
+    finTurnoMessages: (name: string) => [
+      `Shift completed${name}! Rest well`,
+      `Excellent work${name}! See you soon`,
+      `Workday finished${name}! You earned it`,
+      `Perfect${name}! End of shift registered`,
+      `Great day of work${name}! See you soon`,
+      `Fantastic${name}! Have a good evening`,
+    ],
+    accionRegistrada: "Action registered successfully",
+    nosVemosMañana: "See you tomorrow!",
+    felizFestivo: (name?: string) => `Happy holiday, ${name}`,
+    diasSemana: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+    meses: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+    formatoFecha: (dia: string, num: number, mes: string) => `${dia}, ${mes} ${num}`,
   },
 };
 
 // Nombres de los idiomas traducidos a cada idioma (para el selector de ajustes)
 export const languageNames: Record<Language, Record<Language, string>> = {
-  es: { es: "Español", ca: "Catalán", eu: "Euskera", gl: "Gallego" },
-  ca: { es: "Espanyol", ca: "Català", eu: "Èuscar", gl: "Gallec" },
-  eu: { es: "Gaztelania", ca: "Katalana", eu: "Euskara", gl: "Galiziera" },
-  gl: { es: "Español", ca: "Catalán", eu: "Éuscaro", gl: "Galego" },
+  es: { es: "Español", ca: "Catalán", eu: "Euskera", gl: "Gallego", en: "Inglés" },
+  ca: { es: "Espanyol", ca: "Català", eu: "Èuscar", gl: "Gallec", en: "Anglès" },
+  eu: { es: "Gaztelania", ca: "Katalana", eu: "Euskara", gl: "Galiziera", en: "Ingelesa" },
+  gl: { es: "Español", ca: "Catalán", eu: "Éuscaro", gl: "Galego", en: "Inglés" },
+  en: { es: "Spanish", ca: "Catalan", eu: "Basque", gl: "Galician", en: "English" },
 };
