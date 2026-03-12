@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import {
   ImageBackground,
   Image,
+  Linking,
   Modal,
   Platform,
   StyleSheet,
@@ -18,6 +19,7 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 import PinModal from "../../components/PinModal";
 import { apiService } from "../../services/api";
 import { useAuth } from "../context/AuthContext";
+import { translations, languageNames, type Language } from "../../i18n/translations";
 
 const backgroundImage = require("../../assets/backgrounds/fondo_1_tpv.jpg");
 const logoImage = require("../../assets/images/logoPeluqueriaUnida.png");
@@ -27,6 +29,7 @@ export default function TimeControlScreen() {
   const scale = Math.min(width / 1024, 1);
   const responsivo = (minimo: number, ideal: number) => Math.max(minimo, ideal * scale);
 
+  // Escala responsiva basada en el ancho de pantalla (referencia: 1024px)
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
   const [timeRecords, setTimeRecords] = useState([]);
@@ -40,6 +43,10 @@ export default function TimeControlScreen() {
 
   // Estado para el tema actual
   const [theme, setTheme] = useState<"claro" | "oscuro" | "azul">("claro");
+
+  // Estado para el idioma actual y acceso rápido a las traducciones
+  const [language, setLanguage] = useState<Language>("es");
+  const t = translations[language];
 
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [confirmationType, setConfirmationType] = useState<"ENTRADA" | "SALIDA_DESCANSO" | "SALIDA_FIN_TURNO" | "VUELTA_DESCANSO" | "ERROR">("ENTRADA");
@@ -65,6 +72,10 @@ export default function TimeControlScreen() {
         if (themeResponse && themeResponse.success && themeResponse.theme) {
           setTheme(themeResponse.theme);
         }
+        const langResponse = await apiService.getLanguage(user.storeId);
+        if (langResponse && langResponse.success && langResponse.language) {
+          setLanguage(langResponse.language);
+        }
       }
     };
 
@@ -88,6 +99,14 @@ export default function TimeControlScreen() {
 
     if (user?.storeId) {
       await apiService.updateTheme(user.storeId, newTheme);
+    }
+  };
+
+  // Cambia el idioma y lo guarda en la base de datos
+  const selectLanguage = async (newLang: Language) => {
+    setLanguage(newLang);
+    if (user?.storeId) {
+      await apiService.updateLanguage(user.storeId, newLang);
     }
   };
 
@@ -125,9 +144,9 @@ export default function TimeControlScreen() {
 
         // Es día laborable
         if (i === 1) {
-          return "¡Nos vemos mañana!";
+          return t.nosVemosMañana;
         }
-        return `Feliz festivo, ${user?.name}`;
+        return t.felizFestivo(user?.name);
       }
       return "";
     } catch {
@@ -236,29 +255,37 @@ export default function TimeControlScreen() {
           <Modal visible={showSettingsModal} transparent animationType="fade" onRequestClose={() => setShowSettingsModal(false)}>
             <View style={styles.modalOverlay}>
               <View style={styles.settingsModalBox}>
-                <Text style={styles.settingsModalTitle}>Ajustes</Text>
+                <Text style={styles.settingsModalTitle}>{t.ajustes}</Text>
 
-                <Text style={styles.settingsSectionTitle}>Tema</Text>
+                <Text style={styles.settingsSectionTitle}>{t.tema}</Text>
                 <TouchableOpacity style={styles.settingsItem} onPress={() => selectTheme("claro")}>
-                  <Text style={styles.settingsItemText}>⚪ Claro (Ondas)</Text>
+                  <Text style={styles.settingsItemText}>⚪ {t.claro}</Text>
                   {theme === "claro" && <Ionicons name="checkmark" size={20} color="#667eea" />}
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.settingsItem} onPress={() => selectTheme("oscuro")}>
-                  <Text style={styles.settingsItemText}>⚫ Oscuro</Text>
+                  <Text style={styles.settingsItemText}>⚫ {t.oscuro}</Text>
                   {theme === "oscuro" && <Ionicons name="checkmark" size={20} color="#667eea" />}
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.settingsItem} onPress={() => selectTheme("azul")}>
-                  <Text style={styles.settingsItemText}>🔵 Azul Noche</Text>
+                  <Text style={styles.settingsItemText}>🔵 {t.azulNoche}</Text>
                   {theme === "azul" && <Ionicons name="checkmark" size={20} color="#667eea" />}
                 </TouchableOpacity>
 
+                <Text style={[styles.settingsSectionTitle, { marginTop: 20 }]}>{t.idioma}</Text>
+                {(["es", "ca", "eu", "gl"] as Language[]).map((lang) => (
+                  <TouchableOpacity key={lang} style={styles.settingsItem} onPress={() => selectLanguage(lang)}>
+                    <Text style={styles.settingsItemText}>{languageNames[language][lang]}</Text>
+                    {language === lang && <Ionicons name="checkmark" size={20} color="#667eea" />}
+                  </TouchableOpacity>
+                ))}
+
                 <TouchableOpacity style={styles.settingsLogoutBtn} onPress={handleLogout}>
                   <Ionicons name="log-out-outline" size={20} color="white" />
-                  <Text style={styles.settingsLogoutText}>Cerrar Sesión</Text>
+                  <Text style={styles.settingsLogoutText}>{t.cerrarSesion}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.settingsCloseBtn} onPress={() => setShowSettingsModal(false)}>
-                  <Text style={styles.settingsCloseText}>Cerrar</Text>
+                  <Text style={styles.settingsCloseText}>{t.cerrar}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -266,37 +293,39 @@ export default function TimeControlScreen() {
 
           <View style={[styles.content, { marginTop: responsivo(30, 150) }]}>
             <Text style={[styles.dateText, { color: textColor, fontSize: responsivo(18, 40), marginBottom: responsivo(20, 120) }]}>
-                {currentTime.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}
+                {`${t.diasSemana[currentTime.getDay()]}, ${currentTime.getDate()} de ${t.meses[currentTime.getMonth()]}`}
               </Text>
             
             <Text style={[styles.timeText, { color: clockColor, fontSize: responsivo(45, 290), lineHeight: responsivo(55, 360), marginBottom: responsivo(20, 60) }]}>
-              {currentTime.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: false })}
+              {currentTime.toLocaleTimeString(t.dateLocale, { hour: "2-digit", minute: "2-digit", hour12: false })}
             </Text>
 
             <View style={[styles.buttonContainer, { gap: responsivo(12, 40), marginTop: responsivo(40, 120), paddingHorizontal: responsivo(16, 80) }]}>
               <TouchableOpacity style={[styles.button, styles.arrivalButton, { paddingVertical: responsivo(22, 45) }]} onPress={handleClockIn}>
-                <Text style={[styles.buttonText, { fontSize: responsivo(30, 60), fontWeight: "bold" }]}>Llegada</Text>
+                <Text style={[styles.buttonText, { fontSize: responsivo(30, 60), fontWeight: "bold" }]}>{t.llegada}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={[styles.button, styles.departureButton, { paddingVertical: responsivo(22, 45) }]} onPress={handleClockOut}>
-                <Text style={[styles.buttonText, { fontSize: responsivo(30, 60), fontWeight: "bold" }]}>Salida</Text>
+                <Text style={[styles.buttonText, { fontSize: responsivo(30, 60), fontWeight: "bold" }]}>{t.salida}</Text>
               </TouchableOpacity>
             </View>
           </View>
 
          <View style={styles.logoContainer}>
-            <Image 
-              source={logoImage} 
-              style={[styles.logo, { 
-                width: responsivo(180, 500), 
-                height: responsivo(45, 150)  
-              }]} 
-              resizeMode="contain" 
-            />
+            <TouchableOpacity onPress={() => Linking.openURL("https://www.peluqueriaunida.com/")}>
+              <Image
+                source={logoImage}
+                style={[styles.logo, {
+                  width: responsivo(180, 500),
+                  height: responsivo(45, 150)
+                }]}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
           </View>
 
-          <PinModal visible={showPinModal} onClose={() => setShowPinModal(false)} onConfirm={handlePinConfirm} type={modalType} />
-          <ConfirmationModal visible={showConfirmationModal} onClose={() => setShowConfirmationModal(false)} type={confirmationType} isSuccess={isSuccess} extraMessage={farewellMessage} userName={user?.name} />
+          <PinModal visible={showPinModal} onClose={() => setShowPinModal(false)} onConfirm={handlePinConfirm} type={modalType} translations={t} />
+          <ConfirmationModal visible={showConfirmationModal} onClose={() => setShowConfirmationModal(false)} type={confirmationType} isSuccess={isSuccess} extraMessage={farewellMessage} userName={user?.name} translations={t} />
         </SafeAreaView>
         {/* Modal de Cerrar Sesión */}
         <Modal
@@ -307,22 +336,22 @@ export default function TimeControlScreen() {
         >
           <View style={styles.logoutModalOverlay}>
             <View style={[styles.logoutModalBox, { backgroundColor: theme === "claro" ? "#fff" : theme === "oscuro" ? "#2d3748" : "#1e3a8a" }]}>
-              <Text style={[styles.logoutModalTitle, { color: textColor }]}>Cerrar Sesión</Text>
-              <Text style={[styles.logoutModalText, { color: textColor }]}>¿Estás seguro de que quieres salir de la cuenta de {storeNameDisplay}?</Text>
+              <Text style={[styles.logoutModalTitle, { color: textColor }]}>{t.cerrarSesionTitulo}</Text>
+              <Text style={[styles.logoutModalText, { color: textColor }]}>{t.cerrarSesionTexto(storeNameDisplay)}</Text>
 
               <View style={styles.logoutModalButtonsGroup}>
                 <TouchableOpacity
                   style={styles.logoutModalCancelBtn}
                   onPress={() => setShowLogoutModal(false)}
                 >
-                  <Text style={styles.logoutModalCancelText}>Cancelar</Text>
+                  <Text style={styles.logoutModalCancelText}>{t.cancelar}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={styles.logoutModalConfirmBtn}
                   onPress={confirmLogout}
                 >
-                  <Text style={styles.logoutModalConfirmText}>Sí, salir</Text>
+                  <Text style={styles.logoutModalConfirmText}>{t.siSalir}</Text>
                 </TouchableOpacity>
               </View>
             </View>

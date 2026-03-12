@@ -15,6 +15,7 @@ interface ConfirmationModalProps {
   isSuccess: boolean;
   extraMessage?: string;
   userName?: string;
+  translations?: any;
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -23,72 +24,53 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   type,
   isSuccess,
   extraMessage,
-  userName
+  userName,
+  translations: t
 }) => {
   // Memorizar el mensaje para que no cambie en cada render
   const message = useMemo(() => {
     const nameTag = userName ? `, ${userName}` : "";
 
     if (!isSuccess) {
-      const errorMessages = [
-        "❌ Oops! No se pudo registrar la acción",
-        "❌ Error en el sistema, inténtalo de nuevo",
-        "❌ No se pudo conectar con el servidor",
-        "❌ PIN incorrecto o error en el registro",
-        "❌ Algo salió mal, por favor reintenta",
+      const errorMsgs = t?.errorMessages || [
+        "Oops! No se pudo registrar la accion",
+        "Error en el sistema, intentalo de nuevo",
+        "No se pudo conectar con el servidor",
+        "PIN incorrecto o error en el registro",
+        "Algo salio mal, por favor reintenta",
       ];
-      return errorMessages[Math.floor(Math.random() * errorMessages.length)];
+      return "❌ " + errorMsgs[Math.floor(Math.random() * errorMsgs.length)];
     }
 
     switch (type) {
       case "ENTRADA":
-        const entradaMessages = [
-          `🌅 ¡Buenos días ${nameTag}! Turno iniciado correctamente`,
-          `✅ ¡Perfecto ${nameTag}! Ya estás fichado para trabajar`,
-          `🎯 ¡Listo ${nameTag}! Tu jornada laboral ha comenzado`,
-          `💪 ¡Excelente ${nameTag}! Hora de dar lo mejor de ti`,
-          `🚀 ¡Genial ${nameTag}! Que tengas un día productivo`,
-          `⭐ ¡Bienvenido ${nameTag}! Tu turno está registrado`,
+        const entradaMsgs = t?.entradaMessages ? t.entradaMessages(nameTag) : [
+          `Buenos dias${nameTag}! Turno iniciado correctamente`,
         ];
-        return entradaMessages[Math.floor(Math.random() * entradaMessages.length)];
+        return "✅ " + entradaMsgs[Math.floor(Math.random() * entradaMsgs.length)];
 
       case "SALIDA_DESCANSO":
-        const descansoMessages = [
-          "☕ ¡Disfruta tu descanso! Te lo mereces",
-          "🍽️ ¡Hora del break! Recarga energías",
-          "😌 ¡Perfecto! Tómate un respiro",
-          "🌟 ¡Descanso registrado! Relájate un poco",
-          "⏰ ¡Genial! Tiempo de pausa merecida",
-          "🧘 ¡Excelente! Momento de desconectar",
+        const descansoMsgs = t?.descansoMessages || [
+          "Disfruta tu descanso! Te lo mereces",
         ];
-        return descansoMessages[Math.floor(Math.random() * descansoMessages.length)];
+        return "☕ " + descansoMsgs[Math.floor(Math.random() * descansoMsgs.length)];
 
       case "VUELTA_DESCANSO":
-        const vueltaMessages = [
-          "🔥 ¡De vuelta! Continuemos con energía",
-          "💪 ¡Perfecto! Listo para seguir trabajando",
-          "⚡ ¡Genial! Vuelta al trabajo registrada",
-          "🎯 ¡Excelente! Hora de retomar las tareas",
-          "🚀 ¡Fantástico! Sigamos siendo productivos",
-          "✨ ¡Bienvenido de vuelta! A por todas",
+        const vueltaMsgs = t?.vueltaMessages || [
+          "De vuelta! Continuemos con energia",
         ];
-        return vueltaMessages[Math.floor(Math.random() * vueltaMessages.length)];
+        return "🔥 " + vueltaMsgs[Math.floor(Math.random() * vueltaMsgs.length)];
 
       case "SALIDA_FIN_TURNO":
-        const finTurnoMessages = [
-          `🏁 ¡Turno completado ${nameTag}! Que descanses bien`,
-          `🌙 ¡Excelente trabajo ${nameTag}! Hasta pronto`,
-          `👏 ¡Jornada finalizada ${nameTag}! Te lo has ganado`,
-          `🎉 ¡Perfecto ${nameTag}! Fin de turno registrado`,
-          `🌅 ¡Gran día de trabajo ${nameTag}! Nos vemos pronto`,
-          `⭐ ¡Fantástico ${nameTag}! Que tengas buena tarde/noche`,
+        const finTurnoMsgs = t?.finTurnoMessages ? t.finTurnoMessages(nameTag) : [
+          `Turno completado${nameTag}! Que descanses bien`,
         ];
-        return finTurnoMessages[Math.floor(Math.random() * finTurnoMessages.length)];
+        return "🏁 " + finTurnoMsgs[Math.floor(Math.random() * finTurnoMsgs.length)];
 
       default:
-        return "✅ Acción registrada correctamente";
+        return "✅ " + (t?.accionRegistrada || "Accion registrada correctamente");
     }
-  }, [type, isSuccess]);
+  }, [type, isSuccess, t]);
 
   const getModalColor = () => {
     if (!isSuccess) return "#f44336";
@@ -128,7 +110,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
               style={[styles.button, { backgroundColor: getModalColor() }]}
               onPress={onClose}
             >
-              <Text style={styles.buttonText}>Continuar</Text>
+              <Text style={styles.buttonText}>{t?.continuar || "Continuar"}</Text>
             </TouchableOpacity>
           </View>
         </View>
