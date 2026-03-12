@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Alert,
   ImageBackground,
@@ -13,11 +13,13 @@ import {
   Image,
   Linking,
   useWindowDimensions,
-  ScrollView, // Importamos esto para evitar saltos y solapamientos
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAuth } from './context/AuthContext';
+import { translations, type Language } from '../i18n/translations';
 
 const backgroundImage = require('../assets/backgrounds/fondo_1_tpv.jpg');
 const logoImage = require('../assets/images/logoPeluqueriaUnida.png');
@@ -29,17 +31,38 @@ export default function LoginScreen() {
 
   const [storeName, setStoreName] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
+
+  // Estado para el idioma actual (se lee de AsyncStorage, por defecto español)
+  const [language, setLanguage] = useState<Language>("es");
   const { login, isLoading } = useAuth();
   const router = useRouter();
 
+  // Acceso rápido a las traducciones del idioma activo
+  const t = translations[language];
+
+  // Lee el idioma guardado en AsyncStorage al montar el componente
+  // (lo guarda timecontrol cuando el usuario cambia de idioma en ajustes)
+  useEffect(() => {
+    const loadLanguage = async () => {
+      try {
+        const saved = await AsyncStorage.getItem("appLanguage");
+        if (saved && ["es", "ca", "eu", "gl", "en"].includes(saved)) {
+          setLanguage(saved as Language);
+        }
+      } catch (_) {}
+    };
+    loadLanguage();
+  }, []);
+
+  // Valida los campos y autentica la tienda contra el servidor
   const handleLogin = async () => {
     if (!storeName.trim()) {
-      Alert.alert('Error', 'Please enter store name');
+      Alert.alert('Error', t.errorCampoTienda);
       return;
     }
 
     if (!adminPassword.trim()) {
-      Alert.alert('Error', 'Please enter admin password');
+      Alert.alert('Error', t.errorCampoContrasena);
       return;
     }
 
@@ -48,11 +71,11 @@ export default function LoginScreen() {
       if (success) {
         router.replace('/(tabs)/timecontrol');
       } else {
-        Alert.alert('Error', 'Invalid store name or password. Please try again.');
+        Alert.alert('Error', t.errorCredenciales);
         setAdminPassword('');
       }
     } catch (error) {
-      Alert.alert('Error', 'Login failed. Please try again.');
+      Alert.alert('Error', t.errorLogin);
       setAdminPassword('');
     }
   };
@@ -77,20 +100,20 @@ export default function LoginScreen() {
             keyboardShouldPersistTaps="handled"
           >
             <View style={[styles.content, { paddingTop: responsivo(40, 180), maxWidth: responsivo(450, 850) }]}>
-              <Text style={[styles.title, { fontSize: responsivo(40, 60) }]}>Time Control</Text>
-              
-              <Text style={[styles.subtitle, { 
-                fontSize: responsivo(16, 24), 
+              <Text style={[styles.title, { fontSize: responsivo(40, 60) }]}>{t.loginTitulo}</Text>
+
+              <Text style={[styles.subtitle, {
+                fontSize: responsivo(16, 24),
                 marginTop: responsivo(10, 20),
-                marginBottom: responsivo(40, 130) 
+                marginBottom: responsivo(40, 130)
               }]}>
-                Enter store credentials to continue
+                {t.loginSubtitulo}
               </Text>
               
               <View style={[styles.inputContainer, { padding: responsivo(35, 65) }]}>
                 <TextInput
                   style={[styles.input, { paddingVertical: responsivo(20, 45), fontSize: responsivo(18, 28), marginBottom: responsivo(25, 45) }]}
-                  placeholder="Store Name"
+                  placeholder={t.nombreTienda}
                   placeholderTextColor="#999"
                   value={storeName}
                   onChangeText={setStoreName}
@@ -100,7 +123,7 @@ export default function LoginScreen() {
                 
                 <TextInput
                   style={[styles.input, { paddingVertical: responsivo(20, 45), fontSize: responsivo(18, 28), marginBottom: 0 }]}
-                  placeholder="Admin Password"
+                  placeholder={t.contrasenaAdmin}
                   placeholderTextColor="#999"
                   value={adminPassword}
                   onChangeText={setAdminPassword}
@@ -122,7 +145,7 @@ export default function LoginScreen() {
                   onPress={handleLogin}
                   disabled={!storeName.trim() || !adminPassword.trim()}
                 >
-                  <Text style={[styles.loginButtonText, { fontSize: responsivo(30, 50) }]}>Login</Text>
+                  <Text style={[styles.loginButtonText, { fontSize: responsivo(30, 50) }]}>{t.iniciarSesion}</Text>
               </TouchableOpacity>
             </View>
 

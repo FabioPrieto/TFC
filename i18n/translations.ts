@@ -4,6 +4,16 @@ export type Language = "es" | "ca" | "eu" | "gl" | "en";
 // Traducciones de la interfaz para cada idioma (incluye fecha manual con diasSemana/meses)
 export const translations: Record<Language, Record<string, any>> = {
   es: {
+    // Login
+    loginTitulo: "Control Horario",
+    loginSubtitulo: "Introduce las credenciales de la tienda",
+    nombreTienda: "Nombre de la Tienda",
+    contrasenaAdmin: "Contraseña de Administrador",
+    iniciarSesion: "Iniciar Sesión",
+    errorCampoTienda: "Introduce el nombre de la tienda",
+    errorCampoContrasena: "Introduce la contraseña",
+    errorCredenciales: "Nombre de tienda o contraseña incorrectos. Inténtalo de nuevo.",
+    errorLogin: "Error al iniciar sesión. Inténtalo de nuevo.",
     // TimeControl
     llegada: "Llegada",
     salida: "Salida",
@@ -80,6 +90,15 @@ export const translations: Record<Language, Record<string, any>> = {
   },
 
   ca: {
+    loginTitulo: "Control Horari",
+    loginSubtitulo: "Introdueix les credencials de la botiga",
+    nombreTienda: "Nom de la Botiga",
+    contrasenaAdmin: "Contrasenya d'Administrador",
+    iniciarSesion: "Iniciar Sessió",
+    errorCampoTienda: "Introdueix el nom de la botiga",
+    errorCampoContrasena: "Introdueix la contrasenya",
+    errorCredenciales: "Nom de botiga o contrasenya incorrectes. Torna-ho a provar.",
+    errorLogin: "Error en iniciar sessió. Torna-ho a provar.",
     llegada: "Arribada",
     salida: "Sortida",
     ajustes: "Configuració",
@@ -155,6 +174,15 @@ export const translations: Record<Language, Record<string, any>> = {
   },
 
   eu: {
+    loginTitulo: "Ordu Kontrola",
+    loginSubtitulo: "Sartu dendaren kredentzialak",
+    nombreTienda: "Dendaren Izena",
+    contrasenaAdmin: "Administratzailearen Pasahitza",
+    iniciarSesion: "Saioa Hasi",
+    errorCampoTienda: "Sartu dendaren izena",
+    errorCampoContrasena: "Sartu pasahitza",
+    errorCredenciales: "Dendaren izen edo pasahitz okerra. Saiatu berriro.",
+    errorLogin: "Errorea saioa hastean. Saiatu berriro.",
     llegada: "Iritsi",
     salida: "Irten",
     ajustes: "Ezarpenak",
@@ -231,6 +259,15 @@ export const translations: Record<Language, Record<string, any>> = {
   },
 
   gl: {
+    loginTitulo: "Control Horario",
+    loginSubtitulo: "Introduce as credenciais da tenda",
+    nombreTienda: "Nome da Tenda",
+    contrasenaAdmin: "Contrasinal de Administrador",
+    iniciarSesion: "Iniciar Sesión",
+    errorCampoTienda: "Introduce o nome da tenda",
+    errorCampoContrasena: "Introduce o contrasinal",
+    errorCredenciales: "Nome da tenda ou contrasinal incorrectos. Inténtao de novo.",
+    errorLogin: "Erro ao iniciar sesión. Inténtao de novo.",
     llegada: "Chegada",
     salida: "Saída",
     ajustes: "Axustes",
@@ -304,6 +341,15 @@ export const translations: Record<Language, Record<string, any>> = {
   },
 
   en: {
+    loginTitulo: "Time Control",
+    loginSubtitulo: "Enter store credentials to continue",
+    nombreTienda: "Store Name",
+    contrasenaAdmin: "Admin Password",
+    iniciarSesion: "Login",
+    errorCampoTienda: "Please enter store name",
+    errorCampoContrasena: "Please enter admin password",
+    errorCredenciales: "Invalid store name or password. Please try again.",
+    errorLogin: "Login failed. Please try again.",
     llegada: "Clock In",
     salida: "Clock Out",
     ajustes: "Settings",

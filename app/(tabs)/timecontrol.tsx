@@ -17,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PinModal from "../../components/PinModal";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiService } from "../../services/api";
 import { useAuth } from "../context/AuthContext";
 import { translations, languageNames, type Language } from "../../i18n/translations";
@@ -57,31 +58,41 @@ export default function TimeControlScreen() {
 
   const storeNameDisplay = user?.name || "ST_NAME";
 
+  // Reloj y configuración inicial de la vista
   useEffect(() => {
     if (Platform.OS === 'web') {
       const tabList = document.querySelector(".r-pointerEvents-105ug2t");
       if (tabList) (tabList as HTMLElement).style.display = "none";
     }
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
-    // Carga los fichajes y el tema guardado de la tienda en la base de datos
+  // Carga los fichajes, el tema y el idioma cuando el usuario está disponible
+  useEffect(() => {
+    if (!user?.storeId) return;
+
     const loadInitialData = async () => {
       loadTimeRecords();
-      if (user?.storeId) {
+      try {
         const themeResponse = await apiService.getTheme(user.storeId);
         if (themeResponse && themeResponse.success && themeResponse.theme) {
           setTheme(themeResponse.theme);
         }
+        // Carga el idioma de la BD y lo sincroniza en AsyncStorage para que login lo lea
         const langResponse = await apiService.getLanguage(user.storeId);
-        if (langResponse && langResponse.success && langResponse.language) {
+        if (langResponse && langResponse.success && langResponse.language
+            && ["es", "ca", "eu", "gl", "en"].includes(langResponse.language)) {
           setLanguage(langResponse.language);
+          await AsyncStorage.setItem("appLanguage", langResponse.language);
         }
+      } catch (error) {
+        console.error("Error al cargar configuración:", error);
       }
     };
 
     loadInitialData();
-    return () => clearInterval(timer);
-  }, []);
+  }, [user?.storeId]);
 
   const loadTimeRecords = async () => {
     if (!user) return;
@@ -96,17 +107,25 @@ export default function TimeControlScreen() {
   // Cambia el tema y lo guarda en la base de datos
   const selectTheme = async (newTheme: "claro" | "oscuro" | "azul") => {
     setTheme(newTheme);
-
-    if (user?.storeId) {
-      await apiService.updateTheme(user.storeId, newTheme);
+    try {
+      if (user?.storeId) {
+        await apiService.updateTheme(user.storeId, newTheme);
+      }
+    } catch (error) {
+      console.error("Error al guardar el tema:", error);
     }
   };
 
-  // Cambia el idioma y lo guarda en la base de datos
+  // Cambia el idioma y lo guarda en la BD y en AsyncStorage (para que login lo lea sin autenticación)
   const selectLanguage = async (newLang: Language) => {
     setLanguage(newLang);
-    if (user?.storeId) {
-      await apiService.updateLanguage(user.storeId, newLang);
+    try {
+      await AsyncStorage.setItem("appLanguage", newLang);
+      if (user?.storeId) {
+        await apiService.updateLanguage(user.storeId, newLang);
+      }
+    } catch (error) {
+      console.error("Error al guardar el idioma:", error);
     }
   };
 
