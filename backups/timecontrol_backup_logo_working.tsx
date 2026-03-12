@@ -1,8 +1,8 @@
 import { router } from 'expo-router';
+import { Image as ExpoImage } from 'expo-image';
 import React, { useEffect, useState } from "react";
 import {
   ImageBackground,
-  Image,
   Modal,
   Platform,
   StyleSheet,
@@ -20,12 +20,13 @@ import { apiService } from "../../services/api";
 import { useAuth } from "../context/AuthContext";
 
 const backgroundImage = require("../../assets/backgrounds/fondo_1_tpv.jpg");
-const logoImage = require("../../assets/images/logoPeluqueriaUnida.png");
 
 export default function TimeControlScreen() {
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const scale = Math.min(width / 1024, 1);
+  const scaleV = Math.min(height / 1366, 1);
   const responsivo = (minimo: number, ideal: number) => Math.max(minimo, ideal * scale);
+  const responsivoV = (minimo: number, ideal: number) => Math.max(minimo, ideal * scaleV);
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
@@ -265,11 +266,10 @@ export default function TimeControlScreen() {
           </Modal>
 
           <View style={[styles.content, { marginTop: responsivo(30, 150) }]}>
-            <Text style={[styles.dateText, { color: textColor, fontSize: responsivo(18, 40), marginBottom: responsivo(20, 120) }]}>
-                {currentTime.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}
-              </Text>
-            
-            <Text style={[styles.timeText, { color: clockColor, fontSize: responsivo(45, 290), lineHeight: responsivo(55, 360), marginBottom: responsivo(20, 60) }]}>
+            <Text style={[styles.dateText, { color: textColor, fontSize: responsivo(18, 40) }]}>
+              {currentTime.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}
+            </Text>
+            <Text style={[styles.timeText, { color: clockColor, fontSize: responsivo(80, 300), lineHeight: responsivo(100, 360) }]}>
               {currentTime.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: false })}
             </Text>
 
@@ -282,22 +282,21 @@ export default function TimeControlScreen() {
                 <Text style={[styles.buttonText, { fontSize: responsivo(30, 60), fontWeight: "bold" }]}>Salida</Text>
               </TouchableOpacity>
             </View>
-          </View>
 
-         <View style={styles.logoContainer}>
-            <Image 
-              source={logoImage} 
-              style={[styles.logo, { 
-                width: responsivo(180, 500), 
-                height: responsivo(45, 150)  
-              }]} 
-              resizeMode="contain" 
-            />
+            {/* Espaciador + Logotipo centrado entre botones y fondo */}
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+              <ExpoImage
+                source={require('../../assets/images/logotipoPeluqueriaUnida.jpg')}
+                style={{ width: responsivo(100, 300), height: responsivoV(30, 100) }}
+                contentFit="contain"
+              />
+            </View>
           </View>
 
           <PinModal visible={showPinModal} onClose={() => setShowPinModal(false)} onConfirm={handlePinConfirm} type={modalType} />
-          <ConfirmationModal visible={showConfirmationModal} onClose={() => setShowConfirmationModal(false)} type={confirmationType} isSuccess={isSuccess} extraMessage={farewellMessage} userName={user?.name} />
+          <ConfirmationModal visible={showConfirmationModal} onClose={() => setShowConfirmationModal(false)} type={confirmationType} isSuccess={isSuccess} extraMessage={farewellMessage} userName={user?.name}/>
         </SafeAreaView>
+
         {/* Modal de Cerrar Sesión */}
         <Modal
           visible={showLogoutModal}
@@ -480,15 +479,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "white",
     fontWeight: "normal",
-  },
-
-  logoContainer: {
-    alignItems: "center",
-    justifyContent: "flex-end",
-    marginTop: "auto",
-    paddingBottom: Platform.OS === "ios" ? 100 : 40, 
-  },
-  logo: { 
   },
 
   // Estilos para el modal de cerrar sesión
