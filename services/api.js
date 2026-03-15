@@ -188,6 +188,41 @@ class ApiService {
     }
   }
 
+  // Guarda el idioma de la tienda en la base de datos
+  async updateLanguage(storeId, language) {
+    try {
+      const response = await this.makeRequest('/FuncionesBD.php', {
+        method: 'POST',
+        body: JSON.stringify({
+          tipo_operacion: 'update_language',
+          store_id: storeId,
+          language: language
+        })
+      });
+      return response;
+    } catch (error) {
+      console.error('Error al guardar el idioma:', error);
+      return { success: false };
+    }
+  }
+
+  // Obtiene el idioma guardado de la tienda en la base de datos
+  async getLanguage(storeId) {
+    try {
+      const response = await this.makeRequest('/FuncionesBD.php', {
+        method: 'POST',
+        body: JSON.stringify({
+          tipo_operacion: 'get_language',
+          store_id: storeId
+        })
+      });
+      return response;
+    } catch (error) {
+      console.error('Error al obtener el idioma:', error);
+      return { success: false, language: 'es' };
+    }
+  }
+
   // Método de conexión de prueba
   async testConnection() {
     try {

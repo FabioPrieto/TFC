@@ -1,3 +1,4 @@
+// Modal para introducir el PIN de 4 dígitos (entrada, salida y ajustes)
 import React, { useState } from "react";
 import {
   Dimensions,
@@ -13,6 +14,7 @@ interface PinModalProps {
   onClose: () => void;
   onConfirm: (pin: string, exitType?: "DESCANSO" | "FIN_TURNO") => void;
   type: "ENTRADA" | "SALIDA" | "AJUSTES";
+  translations?: any;
 }
 
 const PinModal: React.FC<PinModalProps> = ({
@@ -20,6 +22,7 @@ const PinModal: React.FC<PinModalProps> = ({
   onClose,
   onConfirm,
   type,
+  translations: t,
 }) => {
   const [pin, setPin] = useState("");
   const [showExitOptions, setShowExitOptions] = useState(false);
@@ -127,24 +130,24 @@ const PinModal: React.FC<PinModalProps> = ({
   const renderExitOptions = () => {
     return (
       <View style={styles.exitOptions}>
-        <Text style={styles.exitTitle}>Tipo de salida:</Text>
+        <Text style={styles.exitTitle}>{t?.tipoSalida || "Tipo de salida:"}</Text>
         <TouchableOpacity
           style={[styles.exitButton, styles.breakButton]}
           onPress={() => handleExitTypeSelection("DESCANSO")}
         >
-          <Text style={styles.exitButtonText}>Salida por Descanso</Text>
+          <Text style={styles.exitButtonText}>{t?.salidaDescanso || "Salida por Descanso"}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.exitButton, styles.endShiftButton]}
           onPress={() => handleExitTypeSelection("FIN_TURNO")}
         >
-          <Text style={styles.exitButtonText}>Fin de Turno</Text>
+          <Text style={styles.exitButtonText}>{t?.finTurno || "Fin de Turno"}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.exitButton, styles.cancelExitButton]}
           onPress={() => setShowExitOptions(false)}
         >
-          <Text style={styles.exitButtonText}>Volver</Text>
+          <Text style={styles.exitButtonText}>{t?.volver || "Volver"}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -161,7 +164,7 @@ const PinModal: React.FC<PinModalProps> = ({
         <View style={styles.modalContainer}>
           <View style={styles.header}>
             <Text style={styles.title}>
-              {type === "ENTRADA" ? "Registrar Llegada" : type === "SALIDA" ? "Registrar Salida" : "Ajustes"}
+              {type === "ENTRADA" ? (t?.registrarLlegada || "Registrar Llegada") : type === "SALIDA" ? (t?.registrarSalida || "Registrar Salida") : (t?.ajustes || "Ajustes")}
             </Text>
             <TouchableOpacity onPress={handleCancel} style={styles.closeButton}>
               <Text style={styles.closeButtonText}>✕</Text>
@@ -171,7 +174,7 @@ const PinModal: React.FC<PinModalProps> = ({
           {!showExitOptions ? (
             <>
               <Text style={styles.instruction}>
-                Introduce tu PIN de 4 dígitos
+                {t?.instruccionPin || "Introduce tu PIN de 4 digitos"}
               </Text>
 
               {renderPinDisplay()}
@@ -183,7 +186,7 @@ const PinModal: React.FC<PinModalProps> = ({
                   style={[styles.actionButton, styles.cancelButton]}
                   onPress={handleCancel}
                 >
-                  <Text style={styles.cancelButtonText}>Cancelar</Text>
+                  <Text style={styles.cancelButtonText}>{t?.cancelar || "Cancelar"}</Text>
                 </TouchableOpacity>
 
                 {/* <TouchableOpacity
