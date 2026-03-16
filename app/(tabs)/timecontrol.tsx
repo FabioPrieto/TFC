@@ -21,6 +21,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiService } from "../../services/api";
 import { useAuth } from "../context/AuthContext";
 import { translations, languageNames, type Language } from "../../i18n/translations";
+import { ThemeColors, type AppTheme } from "../../constants/Colors";
 
 const backgroundImage = require("../../assets/backgrounds/fondo_1_tpv.jpg");
 const logoImage = require("../../assets/images/logoPeluqueriaUnida.png");
@@ -43,7 +44,7 @@ export default function TimeControlScreen() {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   // Estado para el tema actual
-  const [theme, setTheme] = useState<"claro" | "oscuro" | "azul">("claro");
+  const [theme, setTheme] = useState<AppTheme>("claro");
 
   // Estado para el idioma actual y acceso rápido a las traducciones
   const [language, setLanguage] = useState<Language>("es");
@@ -53,6 +54,9 @@ export default function TimeControlScreen() {
   const [confirmationType, setConfirmationType] = useState<"ENTRADA" | "SALIDA_DESCANSO" | "SALIDA_FIN_TURNO" | "VUELTA_DESCANSO" | "ERROR">("ENTRADA");
   const [isSuccess, setIsSuccess] = useState(true);
   const [farewellMessage, setFarewellMessage] = useState("");
+
+  // VARIABLE PARA EL NOMBRE DEL EMPLEADO
+  const [employeeName, setEmployeeName] = useState("");
 
   const { user, logout } = useAuth();
 
@@ -105,7 +109,7 @@ export default function TimeControlScreen() {
   };
 
   // Cambia el tema y lo guarda en la base de datos
-  const selectTheme = async (newTheme: "claro" | "oscuro" | "azul") => {
+  const selectTheme = async (newTheme: AppTheme) => {
     setTheme(newTheme);
     try {
       if (user?.storeId) {
@@ -142,30 +146,22 @@ export default function TimeControlScreen() {
   };
 
   // Calcula el mensaje de despedida según el próximo día laborable
-  const calcularMensajeDespedida = async () => {
+  const calcularMensajeDespedida = async (nombreEmpleadoActual: string) => {
     try {
       const festivos = await apiService.getFestivos(user?.storeId);
       const hoy = new Date();
-      const diasSemana = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
-
-      // Buscar el próximo día laborable (máximo 7 días adelante)
       for (let i = 1; i <= 7; i++) {
         const siguiente = new Date(hoy);
         siguiente.setDate(hoy.getDate() + i);
 
         const diaSemana = siguiente.getDay();
-        // Saltar fines de semana (sábado=6, domingo=0)
         if (diaSemana === 0 || diaSemana === 6) continue;
-
-        // Comprobar si es festivo
         const fechaStr = siguiente.toISOString().split("T")[0];
         if (festivos[fechaStr]) continue;
-
-        // Es día laborable
         if (i === 1) {
           return t.nosVemosMañana;
         }
-        return t.felizFestivo(user?.name);
+        return t.felizFestivo(nombreEmpleadoActual);
       }
       return "";
     } catch {
@@ -186,6 +182,8 @@ export default function TimeControlScreen() {
         setIsSuccess(false);
         setConfirmationType("ERROR");
         setShowConfirmationModal(true);
+        // Ocultar mensaje de error de ajustes a los 4 segundos
+        setTimeout(() => setShowConfirmationModal(false), 4000);
       }
       return;
     }
@@ -198,15 +196,26 @@ export default function TimeControlScreen() {
         response = await apiService.clockIn(user?.id, user?.storeId, pin);
         setIsSuccess(response.success);
         setConfirmationType(response.success ? "ENTRADA" : "ERROR");
+
+        // CAPTURAMOS EL NOMBRE DEL EMPLEADO QUE NOS DA TU PHP Y LO FIJAMOS
+        if (response.success) {
+          const nombreActual = response.user_name || response.nombre_empleado || response.nombre || response.empleado || "";
+          if (nombreActual) setEmployeeName(nombreActual);
+        }
+
       } else {
         response = await apiService.clockOut(user?.id, user?.storeId, pin, exitType);
         setIsSuccess(response.success);
 
         if (response.success) {
+          // CAPTURAMOS EL NOMBRE DEL EMPLEADO Y LO FIJAMOS
+          const nombreActual = response.user_name || response.nombre_empleado || response.nombre || response.empleado || "";
+          if (nombreActual) setEmployeeName(nombreActual);
+
           if (exitType === "DESCANSO") {
             setConfirmationType("SALIDA_DESCANSO");
           } else {
-            const mensaje = await calcularMensajeDespedida();
+            const mensaje = await calcularMensajeDespedida(nombreActual);
             setFarewellMessage(mensaje);
             setConfirmationType("SALIDA_FIN_TURNO");
           }
@@ -214,12 +223,22 @@ export default function TimeControlScreen() {
           setConfirmationType("ERROR");
         }
       }
+
       setShowConfirmationModal(true);
       if (response.success) loadTimeRecords();
+
+      // El modal desaparece, pero el nombre del empleado NO se borra
+      setTimeout(() => setShowConfirmationModal(false), 4000);
+
     } catch (error) {
       setConfirmationType("ERROR");
       setIsSuccess(false);
       setShowConfirmationModal(true);
+      
+      // En caso de error de servidor, también lo cerramos a los 4 segundos
+      setTimeout(() => {
+        setShowConfirmationModal(false);
+      }, 4000);
     } finally {
       setIsLoading(false);
     }
@@ -246,24 +265,25 @@ export default function TimeControlScreen() {
 
   if (isLoading) return <LoadingSpinner />;
 
-  // Colores según el tema seleccionado
-  const appBackgroundColor = theme === "claro" ? "transparent" : theme === "oscuro" ? "#1a1a1a" : "#1e3a8a";
-  const headerBackgroundColor = theme === "claro" ? "#667eea" : "rgba(255,255,255,0.1)";
-  const textColor = theme === "claro" ? "#333" : "#fff";
-  const clockColor = theme === "claro" ? "#667eea" : "#fff";
+  // Colores según el tema seleccionado (centralizados en ThemeColors)
+  const tc = ThemeColors[theme];
+  const textColor = tc.text;
+  const clockColor = tc.clock;
 
   return (
-    <View style={[styles.mainWrapper, { backgroundColor: theme === "claro" ? "#fff" : appBackgroundColor }]}>
+    <View style={[styles.mainWrapper, { backgroundColor: tc.wrapperBackground }]}>
       <ImageBackground
-        source={theme === "claro" ? backgroundImage : { uri: "" }}
+        source={tc.showBackgroundImage ? backgroundImage : { uri: "" }}
         style={styles.backgroundImage}
         resizeMode="cover"
         // Mostramos la imagen solo en tema claro, si no, opacidad 0
-        imageStyle={theme !== "claro" ? { opacity: 0 } : { opacity: 1 }}
+        imageStyle={tc.showBackgroundImage ? { opacity: 1 } : { opacity: 0 }}
       >
         <SafeAreaView style={styles.container}>
-          <View style={[styles.header, { backgroundColor: headerBackgroundColor, padding: responsivo(10, 15) }]}>
-            <Text style={[styles.storeName, { fontSize: responsivo(16, 24) }]}>{storeNameDisplay}</Text>
+          <View style={[styles.header, { backgroundColor: tc.headerBackground, padding: responsivo(10, 15) }]}>
+            <Text style={[styles.storeName, { fontSize: responsivo(16, 24) }]}>
+              {employeeName !== "" ? employeeName : storeNameDisplay}
+            </Text>
 
             <TouchableOpacity onPress={handleSettingsPress} style={styles.settingsButton}>
               <Ionicons name="settings-sharp" size={responsivo(18, 24)} color="white" />
@@ -344,7 +364,7 @@ export default function TimeControlScreen() {
           </View>
 
           <PinModal visible={showPinModal} onClose={() => setShowPinModal(false)} onConfirm={handlePinConfirm} type={modalType} translations={t} />
-          <ConfirmationModal visible={showConfirmationModal} onClose={() => setShowConfirmationModal(false)} type={confirmationType} isSuccess={isSuccess} extraMessage={farewellMessage} userName={user?.name} translations={t} />
+          <ConfirmationModal visible={showConfirmationModal} onClose={() => setShowConfirmationModal(false)} type={confirmationType} isSuccess={isSuccess} extraMessage={farewellMessage} userName={employeeName} translations={t} theme={theme} />
         </SafeAreaView>
         {/* Modal de Cerrar Sesión */}
         <Modal
@@ -354,7 +374,7 @@ export default function TimeControlScreen() {
           onRequestClose={() => setShowLogoutModal(false)}
         >
           <View style={styles.logoutModalOverlay}>
-            <View style={[styles.logoutModalBox, { backgroundColor: theme === "claro" ? "#fff" : theme === "oscuro" ? "#2d3748" : "#1e3a8a" }]}>
+            <View style={[styles.logoutModalBox, { backgroundColor: tc.modalBg }]}>
               <Text style={[styles.logoutModalTitle, { color: textColor }]}>{t.cerrarSesionTitulo}</Text>
               <Text style={[styles.logoutModalText, { color: textColor }]}>{t.cerrarSesionTexto(storeNameDisplay)}</Text>
 

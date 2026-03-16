@@ -4,9 +4,9 @@ import {
     Modal,
     StyleSheet,
     Text,
-    TouchableOpacity,
     View,
 } from "react-native";
+import { ThemeColors, type AppTheme } from "../constants/Colors";
 
 interface ConfirmationModalProps {
   visible: boolean;
@@ -16,6 +16,7 @@ interface ConfirmationModalProps {
   extraMessage?: string;
   userName?: string;
   translations?: any;
+  theme?: AppTheme;
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -25,8 +26,11 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   isSuccess,
   extraMessage,
   userName,
-  translations: t
+  translations: t,
+  theme = "claro",
 }) => {
+  const colors = ThemeColors[theme];
+
   // Memorizar el mensaje para que no cambie en cada render
   const message = useMemo(() => {
     const nameTag = userName ? `, ${userName}` : "";
@@ -39,7 +43,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         "PIN incorrecto o error en el registro",
         "Algo salio mal, por favor reintenta",
       ];
-      return "❌ " + errorMsgs[Math.floor(Math.random() * errorMsgs.length)];
+      return errorMsgs[Math.floor(Math.random() * errorMsgs.length)] + " ❌";
     }
 
     switch (type) {
@@ -47,34 +51,31 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         const entradaMsgs = t?.entradaMessages ? t.entradaMessages(nameTag) : [
           `Buenos dias${nameTag}! Turno iniciado correctamente`,
         ];
-        return "✅ " + entradaMsgs[Math.floor(Math.random() * entradaMsgs.length)];
-
+        return entradaMsgs[Math.floor(Math.random() * entradaMsgs.length)] + " ✅";
       case "SALIDA_DESCANSO":
         const descansoMsgs = t?.descansoMessages || [
           "Disfruta tu descanso! Te lo mereces",
         ];
-        return "☕ " + descansoMsgs[Math.floor(Math.random() * descansoMsgs.length)];
+        return descansoMsgs[Math.floor(Math.random() * descansoMsgs.length)] + " ☕";
 
       case "VUELTA_DESCANSO":
         const vueltaMsgs = t?.vueltaMessages || [
           "De vuelta! Continuemos con energia",
         ];
-        return "🔥 " + vueltaMsgs[Math.floor(Math.random() * vueltaMsgs.length)];
+        return vueltaMsgs[Math.floor(Math.random() * vueltaMsgs.length)] + " 🔥";
 
       case "SALIDA_FIN_TURNO":
         const finTurnoMsgs = t?.finTurnoMessages ? t.finTurnoMessages(nameTag) : [
           `Turno completado${nameTag}! Que descanses bien`,
         ];
-        return "🏁 " + finTurnoMsgs[Math.floor(Math.random() * finTurnoMsgs.length)];
-
+        return finTurnoMsgs[Math.floor(Math.random() * finTurnoMsgs.length)] + " 🏁";
       default:
-        return "✅ " + (t?.accionRegistrada || "Accion registrada correctamente");
+        return (t?.accionRegistrada || "Accion registrada correctamente") + " ✅";
     }
   }, [type, isSuccess, t]);
 
   const getModalColor = () => {
     if (!isSuccess) return "#f44336";
-    
     switch (type) {
       case "ENTRADA":
         return "#4CAF50";
@@ -97,21 +98,14 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        <View style={[styles.modalContainer, { borderTopColor: getModalColor() }]}>
+        <View style={[styles.modalContainer, { backgroundColor: colors.modalBg, borderTopColor: getModalColor() }]}>
           <View style={styles.content}>
             <Text style={[styles.message, { color: getModalColor() }]}>
               {message}
             </Text>
             {extraMessage ? (
-              <Text style={styles.extraMessage}>{extraMessage}</Text>
+              <Text style={[styles.extraMessage, { color: colors.modalExtraText }]}>{extraMessage}</Text>
             ) : null}
-
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: getModalColor() }]}
-              onPress={onClose}
-            >
-              <Text style={styles.buttonText}>{t?.continuar || "Continuar"}</Text>
-            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -129,7 +123,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalContainer: {
-    backgroundColor: "white",
     borderRadius: 20,
     padding: 30,
     width: width * 0.85,
@@ -143,33 +136,20 @@ const styles = StyleSheet.create({
   },
   content: {
     alignItems: "center",
+    justifyContent: "center",
   },
   message: {
-    fontSize: 18,
-    fontWeight: "600",
+    fontSize: 24,
+    fontWeight: "700",
     textAlign: "center",
-    marginBottom: 25,
-    lineHeight: 24,
+    lineHeight: 32,
   },
   extraMessage: {
-    fontSize: 15,
-    color: "#555",
+    fontSize: 17,
     textAlign: "center",
-    marginBottom: 20,
-    lineHeight: 22,
+    marginTop: 12,
+    lineHeight: 24,
     fontStyle: "italic",
-  },
-  button: {
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 25,
-    minWidth: 120,
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
   },
 });
 
