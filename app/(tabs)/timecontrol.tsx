@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   ImageBackground,
   Image,
@@ -11,10 +11,10 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   View,
+  Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import ConfirmationModal from "../../components/ConfirmationModal";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import PinModal from "../../components/PinModal";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -25,13 +25,13 @@ import { ThemeColors, type AppTheme } from "../../constants/Colors";
 
 const backgroundImage = require("../../assets/backgrounds/fondo_1_tpv.jpg");
 const logoImage = require("../../assets/images/logoPeluqueriaUnida.png");
+const logoImageWhite = require("../../assets/images/logo_peluqueria_unida_blanco.png");
 
 export default function TimeControlScreen() {
   const { width } = useWindowDimensions();
   const scale = Math.min(width / 1024, 1);
   const responsivo = (minimo: number, ideal: number) => Math.max(minimo, ideal * scale);
 
-  // Escala responsiva basada en el ancho de pantalla (referencia: 1024px)
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
   const [timeRecords, setTimeRecords] = useState([]);
@@ -39,30 +39,24 @@ export default function TimeControlScreen() {
   const [modalType, setModalType] = useState<"ENTRADA" | "SALIDA" | "AJUSTES">("ENTRADA");
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-
-  // Estado para el modal de ajustes (tema y cerrar sesión)
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-
-  // Estado para el tema actual
   const [theme, setTheme] = useState<AppTheme>("claro");
-
-  // Estado para el idioma actual y acceso rápido a las traducciones
   const [language, setLanguage] = useState<Language>("es");
   const t = translations[language];
 
-  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-  const [confirmationType, setConfirmationType] = useState<"ENTRADA" | "SALIDA_DESCANSO" | "SALIDA_FIN_TURNO" | "VUELTA_DESCANSO" | "ERROR">("ENTRADA");
-  const [isSuccess, setIsSuccess] = useState(true);
-  const [farewellMessage, setFarewellMessage] = useState("");
-
-  // VARIABLE PARA EL NOMBRE DEL EMPLEADO
+  // --- ESTADOS PARA LA PANTALLA DE MENSAJES (SIN MODAL) ---
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [feedbackEmoji, setFeedbackEmoji] = useState("");
+  const [feedbackTitle, setFeedbackTitle] = useState("");
+  const [feedbackSubtitle, setFeedbackSubtitle] = useState("");
+  const [feedbackColor, setFeedbackColor] = useState("#4CAF50");
+  const [feedbackTime, setFeedbackTime] = useState(""); // Hora exacta del fichaje
   const [employeeName, setEmployeeName] = useState("");
+  const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { user, logout } = useAuth();
+  const storeNameDisplay = user?.name || "Rocholl";
 
-  const storeNameDisplay = user?.name || "ST_NAME";
-
-  // Reloj y configuración inicial de la vista
   useEffect(() => {
     if (Platform.OS === 'web') {
       const tabList = document.querySelector(".r-pointerEvents-105ug2t");
@@ -72,7 +66,6 @@ export default function TimeControlScreen() {
     return () => clearInterval(timer);
   }, []);
 
-  // Carga los fichajes, el tema y el idioma cuando el usuario está disponible
   useEffect(() => {
     if (!user?.storeId) return;
 
@@ -83,9 +76,9 @@ export default function TimeControlScreen() {
         if (themeResponse && themeResponse.success && themeResponse.theme) {
           setTheme(themeResponse.theme);
         }
-        // Carga el idioma de la BD y lo sincroniza en AsyncStorage para que login lo lea
         const langResponse = await apiService.getLanguage(user.storeId);
-        if (langResponse && langResponse.success && langResponse.language
+        if (langResponse && langResponse.success && 
+            langResponse.language
             && ["es", "ca", "eu", "gl", "en"].includes(langResponse.language)) {
           setLanguage(langResponse.language);
           await AsyncStorage.setItem("appLanguage", langResponse.language);
@@ -108,7 +101,6 @@ export default function TimeControlScreen() {
     }
   };
 
-  // Cambia el tema y lo guarda en la base de datos
   const selectTheme = async (newTheme: AppTheme) => {
     setTheme(newTheme);
     try {
@@ -120,7 +112,6 @@ export default function TimeControlScreen() {
     }
   };
 
-  // Cambia el idioma y lo guarda en la BD y en AsyncStorage (para que login lo lea sin autenticación)
   const selectLanguage = async (newLang: Language) => {
     setLanguage(newLang);
     try {
@@ -133,19 +124,16 @@ export default function TimeControlScreen() {
     }
   };
 
-  // Abre el PinModal para registrar llegada
   const handleClockIn = () => {
     setModalType("ENTRADA");
     setShowPinModal(true);
   };
 
-  // Abre el PinModal para registrar salida
   const handleClockOut = () => {
     setModalType("SALIDA");
     setShowPinModal(true);
   };
 
-  // Calcula el mensaje de despedida según el próximo día laborable
   const calcularMensajeDespedida = async (nombreEmpleadoActual: string) => {
     try {
       const festivos = await apiService.getFestivos(user?.storeId);
@@ -169,94 +157,100 @@ export default function TimeControlScreen() {
     }
   };
 
-  // Se ejecuta al confirmar el PIN (entrada, salida o ajustes)
+  // --- LÓGICA PARA MOSTRAR EL MENSAJE EN PANTALLA ---
+  const triggerFeedback = (emoji: string, title: string, subtitle: string, color: string) => {
+    setFeedbackEmoji(emoji);
+    setFeedbackTitle(title);
+    setFeedbackSubtitle(subtitle);
+    setFeedbackColor(color);
+    
+    // Congelamos la hora exacta
+    const horaFichaje = new Date().toLocaleTimeString(t.dateLocale, { hour: "2-digit", minute: "2-digit", hour12: false });
+    setFeedbackTime(horaFichaje);
+    
+    setShowFeedback(true);
+
+    if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+    feedbackTimer.current = setTimeout(() => {
+      setShowFeedback(false);
+    }, 4000); // 4 segundos
+  };
+
   const handlePinConfirm = async (pin: string, exitType?: "DESCANSO" | "FIN_TURNO") => {
     setShowPinModal(false);
-
-    // Si es ajustes, validamos el PIN contra el servidor y abrimos ajustes
     if (modalType === "AJUSTES") {
       const response = await apiService.authenticateStore(user?.name, pin);
       if (response.success) {
         setShowSettingsModal(true);
       } else {
-        setIsSuccess(false);
-        setConfirmationType("ERROR");
-        setShowConfirmationModal(true);
-        // Ocultar mensaje de error de ajustes a los 4 segundos
-        setTimeout(() => setShowConfirmationModal(false), 4000);
+        triggerFeedback("❌", "Error", "PIN de Ajustes incorrecto", "#f44336");
       }
       return;
     }
 
     setIsLoading(true);
-    setFarewellMessage("");
     try {
       let response: any;
       if (modalType === "ENTRADA") {
         response = await apiService.clockIn(user?.id, user?.storeId, pin);
-        setIsSuccess(response.success);
-        setConfirmationType(response.success ? "ENTRADA" : "ERROR");
-
-        // CAPTURAMOS EL NOMBRE DEL EMPLEADO QUE NOS DA TU PHP Y LO FIJAMOS
         if (response.success) {
           const nombreActual = response.user_name || response.nombre_empleado || response.nombre || response.empleado || "";
           if (nombreActual) setEmployeeName(nombreActual);
+          
+          // Lógica corregida para el descanso
+          if (response.entry_type === "VUELTA_DESCANSO") {
+              triggerFeedback("🔥", "¡De vuelta!", `${nombreActual}, continuemos con energía`, "#2196F3");
+          } else {
+              triggerFeedback("👋", `¡Buenos días, ${nombreActual}!`, "Turno iniciado correctamente", "#4CAF50");
+          }
+        } else {
+          triggerFeedback("❌", "Error", response.message || "PIN incorrecto", "#f44336");
         }
 
       } else {
         response = await apiService.clockOut(user?.id, user?.storeId, pin, exitType);
-        setIsSuccess(response.success);
-
         if (response.success) {
-          // CAPTURAMOS EL NOMBRE DEL EMPLEADO Y LO FIJAMOS
           const nombreActual = response.user_name || response.nombre_empleado || response.nombre || response.empleado || "";
           if (nombreActual) setEmployeeName(nombreActual);
 
           if (exitType === "DESCANSO") {
-            setConfirmationType("SALIDA_DESCANSO");
+            triggerFeedback("☕", "¡Hasta ahora!", "Disfruta de tu descanso", "#FF9800");
           } else {
+            const hoy = new Date();
+            const esViernes = hoy.getDay() === 5;
+            const titulo = esViernes ? "¡Feliz fin de semana!" : "Turno completado";
             const mensaje = await calcularMensajeDespedida(nombreActual);
-            setFarewellMessage(mensaje);
-            setConfirmationType("SALIDA_FIN_TURNO");
+            
+            triggerFeedback("🏁", titulo, mensaje || `¡Que descanses bien, ${nombreActual}!`, "#9C27B0");
           }
         } else {
-          setConfirmationType("ERROR");
+          const msg = response.message || "";
+          if (msg.toLowerCase().includes("no hay entrada") || msg.toLowerCase().includes("fichado")) {
+            triggerFeedback("⚠️", "¡Te has colado!", "No has fichado al entrar y estás fichando salida", "#f44336");
+          } else {
+            triggerFeedback("❌", "Oops!", msg, "#f44336");
+          }
         }
       }
 
-      setShowConfirmationModal(true);
       if (response.success) loadTimeRecords();
-
-      // El modal desaparece, pero el nombre del empleado NO se borra
-      setTimeout(() => setShowConfirmationModal(false), 4000);
-
     } catch (error) {
-      setConfirmationType("ERROR");
-      setIsSuccess(false);
-      setShowConfirmationModal(true);
-      
-      // En caso de error de servidor, también lo cerramos a los 4 segundos
-      setTimeout(() => {
-        setShowConfirmationModal(false);
-      }, 4000);
+      triggerFeedback("❌", "Error", "No se pudo conectar con el servidor", "#f44336");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Abre el PinModal para acceder a ajustes
   const handleSettingsPress = () => {
     setModalType("AJUSTES");
     setShowPinModal(true);
   };
 
-  // Abre el modal de Cerrar Sesión
   const handleLogout = () => {
     setShowSettingsModal(false);
     setShowLogoutModal(true);
   };
 
-  // Se ejecuta al confirmar el cierre de sesión
   const confirmLogout = () => {
     setShowLogoutModal(false);
     if (logout) logout();
@@ -265,10 +259,10 @@ export default function TimeControlScreen() {
 
   if (isLoading) return <LoadingSpinner />;
 
-  // Colores según el tema seleccionado (centralizados en ThemeColors)
   const tc = ThemeColors[theme];
   const textColor = tc.text;
   const clockColor = tc.clock;
+  const currentLogo = (theme === "oscuro" || theme === "azul") ? logoImageWhite : logoImage;
 
   return (
     <View style={[styles.mainWrapper, { backgroundColor: tc.wrapperBackground }]}>
@@ -276,22 +270,105 @@ export default function TimeControlScreen() {
         source={tc.showBackgroundImage ? backgroundImage : { uri: "" }}
         style={styles.backgroundImage}
         resizeMode="cover"
-        // Mostramos la imagen solo en tema claro, si no, opacidad 0
         imageStyle={tc.showBackgroundImage ? { opacity: 1 } : { opacity: 0 }}
       >
         <SafeAreaView style={styles.container}>
-          <View style={[styles.header, { backgroundColor: tc.headerBackground, padding: responsivo(10, 15) }]}>
-            <Text style={[styles.storeName, { fontSize: responsivo(16, 24) }]}>
-              {employeeName !== "" ? employeeName : storeNameDisplay}
-            </Text>
+          
+          {showFeedback ? (
+            /* --- VISTA DE MENSAJES LIMPIA Y CENTRADA --- */
+            <Pressable 
+              style={styles.feedbackContainer} 
+              onPress={() => {
+                setShowFeedback(false);
+                if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+              }}
+            >
+              <Text style={[styles.feedbackEmoji, { fontSize: responsivo(80, 160) }]}>
+                {feedbackEmoji}
+              </Text>
+              
+              <Text style={[styles.feedbackTitle, { color: feedbackColor, fontSize: responsivo(35, 75) }]}>
+                {feedbackTitle}
+              </Text>
+              
+              {feedbackSubtitle ? (
+                <Text style={[styles.feedbackSubtitle, { color: textColor, fontSize: responsivo(18, 35) }]}>
+                  {feedbackSubtitle}
+                </Text>
+              ) : null}
 
-            <TouchableOpacity onPress={handleSettingsPress} style={styles.settingsButton}>
-              <Ionicons name="settings-sharp" size={responsivo(18, 24)} color="white" />
+              <Text style={[styles.feedbackSubtitle, { color: textColor, fontSize: responsivo(18, 35), marginTop: responsivo(10, 20), fontWeight: "bold" }]}>
+                {feedbackTime}
+              </Text>
+
+              <Text style={[styles.feedbackTouchNote, { color: textColor, fontSize: responsivo(14, 24) }]}>
+                (Toca la pantalla para volver)
+              </Text>
+            </Pressable>
+          ) : (
+            /* --- VISTA NORMAL (RELOJ Y BOTONES) --- */
+            <>
+              {/* CABECERA DIVIDIDA EN 3 PARA CENTRAR EL NOMBRE DE LA TIENDA */}
+              <View style={[styles.header, { backgroundColor: tc.headerBackground, padding: responsivo(10, 15) }]}>
+                
+                <View style={{ flex: 1, alignItems: 'flex-start' }}>
+                   <Text numberOfLines={1} style={{ fontSize: responsivo(16, 24), color: "white", fontWeight: "600" }}>
+                      {employeeName}
+                   </Text>
+                </View>
+
+                <View style={{ flex: 1, alignItems: 'center' }}>
+                  <Text numberOfLines={1} style={[styles.storeName, { fontSize: responsivo(18, 28) }]}>
+                    {storeNameDisplay}
+                  </Text>
+                </View>
+
+                <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                  <TouchableOpacity onPress={handleSettingsPress} style={styles.settingsButton}>
+                    <Ionicons name="settings-sharp" size={responsivo(18, 24)} color="white" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <View style={[styles.content, { marginTop: responsivo(30, 150) }]}>
+                <Text style={[styles.dateText, { color: textColor, fontSize: responsivo(18, 40), marginBottom: responsivo(20, 120) }]}>
+                  {t.formatoFecha(t.diasSemana[currentTime.getDay()], currentTime.getDate(), t.meses[currentTime.getMonth()])}
+                </Text>
+                
+                <Text style={[styles.timeText, { color: clockColor, fontSize: responsivo(45, 290), lineHeight: responsivo(55, 360), marginBottom: responsivo(20, 60) }]}>
+                  {currentTime.toLocaleTimeString(t.dateLocale, { hour: "2-digit", minute: "2-digit", hour12: false })}
+                </Text>
+
+                <View style={[styles.buttonContainer, { gap: responsivo(12, 40), marginTop: responsivo(40, 120), paddingHorizontal: responsivo(16, 80) }]}>
+                  <TouchableOpacity style={[styles.button, styles.arrivalButton, { paddingVertical: responsivo(22, 45) }]} onPress={handleClockIn}>
+                    <Text style={[styles.buttonText, { fontSize: responsivo(30, 60), fontWeight: "bold" }]}>{t.llegada}</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={[styles.button, styles.departureButton, { paddingVertical: responsivo(22, 45) }]} onPress={handleClockOut}>
+                    <Text style={[styles.buttonText, { fontSize: responsivo(30, 60), fontWeight: "bold" }]}>{t.salida}</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </>
+          )}
+
+          <View style={styles.logoContainer}>
+            <TouchableOpacity onPress={() => Linking.openURL("https://www.peluqueriaunida.com/")}>
+              <Image
+                source={currentLogo}
+                style={[styles.logo, {
+                  width: responsivo(180, 500),
+                  height: responsivo(45, 150)
+                }]}
+                resizeMode="contain"
+              />
             </TouchableOpacity>
           </View>
 
-          {/* Modal de ajustes */}
-          <Modal visible={showSettingsModal} transparent animationType="fade" onRequestClose={() => setShowSettingsModal(false)}>
+          <PinModal visible={showPinModal} onClose={() => setShowPinModal(false)} onConfirm={handlePinConfirm} type={modalType} translations={t} />
+        </SafeAreaView>
+
+        <Modal visible={showSettingsModal} transparent animationType="fade" onRequestClose={() => setShowSettingsModal(false)}>
             <View style={styles.modalOverlay}>
               <View style={styles.settingsModalBox}>
                 <Text style={styles.settingsModalTitle}>{t.ajustes}</Text>
@@ -328,45 +405,8 @@ export default function TimeControlScreen() {
                 </TouchableOpacity>
               </View>
             </View>
-          </Modal>
+        </Modal>
 
-          <View style={[styles.content, { marginTop: responsivo(30, 150) }]}>
-            <Text style={[styles.dateText, { color: textColor, fontSize: responsivo(18, 40), marginBottom: responsivo(20, 120) }]}>
-                {t.formatoFecha(t.diasSemana[currentTime.getDay()], currentTime.getDate(), t.meses[currentTime.getMonth()])}
-              </Text>
-            
-            <Text style={[styles.timeText, { color: clockColor, fontSize: responsivo(45, 290), lineHeight: responsivo(55, 360), marginBottom: responsivo(20, 60) }]}>
-              {currentTime.toLocaleTimeString(t.dateLocale, { hour: "2-digit", minute: "2-digit", hour12: false })}
-            </Text>
-
-            <View style={[styles.buttonContainer, { gap: responsivo(12, 40), marginTop: responsivo(40, 120), paddingHorizontal: responsivo(16, 80) }]}>
-              <TouchableOpacity style={[styles.button, styles.arrivalButton, { paddingVertical: responsivo(22, 45) }]} onPress={handleClockIn}>
-                <Text style={[styles.buttonText, { fontSize: responsivo(30, 60), fontWeight: "bold" }]}>{t.llegada}</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={[styles.button, styles.departureButton, { paddingVertical: responsivo(22, 45) }]} onPress={handleClockOut}>
-                <Text style={[styles.buttonText, { fontSize: responsivo(30, 60), fontWeight: "bold" }]}>{t.salida}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-         <View style={styles.logoContainer}>
-            <TouchableOpacity onPress={() => Linking.openURL("https://www.peluqueriaunida.com/")}>
-              <Image
-                source={logoImage}
-                style={[styles.logo, {
-                  width: responsivo(180, 500),
-                  height: responsivo(45, 150)
-                }]}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-          </View>
-
-          <PinModal visible={showPinModal} onClose={() => setShowPinModal(false)} onConfirm={handlePinConfirm} type={modalType} translations={t} />
-          <ConfirmationModal visible={showConfirmationModal} onClose={() => setShowConfirmationModal(false)} type={confirmationType} isSuccess={isSuccess} extraMessage={farewellMessage} userName={employeeName} translations={t} theme={theme} />
-        </SafeAreaView>
-        {/* Modal de Cerrar Sesión */}
         <Modal
           visible={showLogoutModal}
           transparent={true}
@@ -402,7 +442,6 @@ export default function TimeControlScreen() {
   );
 }
 
-
 const styles = StyleSheet.create({
   mainWrapper: {
     flex: 1,
@@ -432,10 +471,9 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   storeName: {
-    fontSize: 24,
     fontWeight: "bold",
     color: "white",
-    flex: 1,
+    textAlign: "center",
   },
   settingsButton: {
     padding: 10,
@@ -443,6 +481,37 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     marginRight: 10,
   },
+  
+  // --- ESTILOS DE LA PANTALLA DE MENSAJES ---
+  feedbackContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    width: "100%",
+  },
+  feedbackEmoji: {
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  feedbackTitle: {
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  feedbackSubtitle: {
+    textAlign: "center",
+    fontWeight: "600",
+    opacity: 0.8,
+  },
+  feedbackTouchNote: {
+    marginTop: 40,
+    opacity: 0.5,
+    fontStyle: "italic",
+    textAlign: "center",
+  },
+  // ------------------------------------------
+
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
@@ -518,7 +587,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   dateText: {
-    marginBottom: 120,
     textTransform: "capitalize",
     fontWeight: "600",
   },
@@ -526,7 +594,6 @@ const styles = StyleSheet.create({
     fontWeight: "300",
     fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
     letterSpacing: 2,
-    marginBottom: 60,
   },
   buttonContainer: {
     flexDirection: "row",
@@ -549,7 +616,6 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "normal",
   },
-
   logoContainer: {
     alignItems: "center",
     justifyContent: "flex-end",
