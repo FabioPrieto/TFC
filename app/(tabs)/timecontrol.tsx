@@ -67,16 +67,16 @@ export default function TimeControlScreen() {
   }, []);
 
   useEffect(() => {
-    if (!user?.storeId) return;
+    if (!user?.rutaId) return;
 
     const loadInitialData = async () => {
       loadTimeRecords();
       try {
-        const themeResponse = await apiService.getTheme(user.storeId);
+        const themeResponse = await apiService.getTheme(user.rutaId);
         if (themeResponse && themeResponse.success && themeResponse.theme) {
           setTheme(themeResponse.theme);
         }
-        const langResponse = await apiService.getLanguage(user.storeId);
+        const langResponse = await apiService.getLanguage(user.rutaId);
         if (langResponse && langResponse.success && 
             langResponse.language
             && ["es", "ca", "eu", "gl", "en"].includes(langResponse.language)) {
@@ -89,12 +89,12 @@ export default function TimeControlScreen() {
     };
 
     loadInitialData();
-  }, [user?.storeId]);
+  }, [user?.rutaId]);
 
   const loadTimeRecords = async () => {
     if (!user) return;
     try {
-      const response = await apiService.getTimeRecords(user.id, user.storeId);
+      const response = await apiService.getTimeRecords(user.id, user.rutaId);
       if (response.success) setTimeRecords(response.records || []);
     } catch (error) {
       console.error("Error al cargar los fichajes:", error);
@@ -104,8 +104,8 @@ export default function TimeControlScreen() {
   const selectTheme = async (newTheme: AppTheme) => {
     setTheme(newTheme);
     try {
-      if (user?.storeId) {
-        await apiService.updateTheme(user.storeId, newTheme);
+      if (user?.rutaId) {
+        await apiService.updateTheme(user.rutaId, newTheme);
       }
     } catch (error) {
       console.error("Error al guardar el tema:", error);
@@ -116,8 +116,8 @@ export default function TimeControlScreen() {
     setLanguage(newLang);
     try {
       await AsyncStorage.setItem("appLanguage", newLang);
-      if (user?.storeId) {
-        await apiService.updateLanguage(user.storeId, newLang);
+      if (user?.rutaId) {
+        await apiService.updateLanguage(user.rutaId, newLang);
       }
     } catch (error) {
       console.error("Error al guardar el idioma:", error);
@@ -136,7 +136,7 @@ export default function TimeControlScreen() {
 
   const calcularMensajeDespedida = async (nombreEmpleadoActual: string) => {
     try {
-      const festivos = await apiService.getFestivos(user?.storeId);
+      const festivos = await apiService.getFestivos(user?.rutaId);
       const hoy = new Date();
       for (let i = 1; i <= 7; i++) {
         const siguiente = new Date(hoy);
@@ -192,7 +192,7 @@ export default function TimeControlScreen() {
     try {
       let response: any;
       if (modalType === "ENTRADA") {
-        response = await apiService.clockIn(user?.id, user?.storeId, pin);
+        response = await apiService.clockIn(user?.id, user?.rutaId, pin);
         if (response.success) {
           const nombreActual = response.user_name || response.nombre_empleado || response.nombre || response.empleado || "";
           if (nombreActual) setEmployeeName(nombreActual);
@@ -208,7 +208,7 @@ export default function TimeControlScreen() {
         }
 
       } else {
-        response = await apiService.clockOut(user?.id, user?.storeId, pin, exitType);
+        response = await apiService.clockOut(user?.id, user?.rutaId, pin, exitType);
         if (response.success) {
           const nombreActual = response.user_name || response.nombre_empleado || response.nombre || response.empleado || "";
           if (nombreActual) setEmployeeName(nombreActual);

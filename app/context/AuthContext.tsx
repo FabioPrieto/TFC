@@ -5,7 +5,7 @@ import { apiService } from '../../services/api';
 interface User {
   id: string;
   name: string;
-  storeId: string;
+  rutaId: string;
 }
 
 interface AuthContextType {
@@ -44,7 +44,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (userData) {
         const parsedUser = JSON.parse(userData);
         // Verify the stored user data is still valid
-        if (parsedUser.id && parsedUser.name && parsedUser.storeId) {
+        if (parsedUser.id && parsedUser.name && parsedUser.rutaId) {
           setUser(parsedUser);
         } else {
           // Clear invalid user data
@@ -70,7 +70,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const userData: User = {
           id: response.store.ST_ID.toString(),
           name: response.store.ST_Name,
-          storeId: response.store.ST_IdStore,
+          rutaId: response.store.ruta_id.toString(),
         };
         
         setUser(userData);

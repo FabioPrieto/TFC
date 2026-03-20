@@ -11,7 +11,7 @@ export default function Index() {
     if (!isLoading) {
       if (isAuthenticated && user) {
         // User is authenticated, redirect to main app
-        console.log(`User ${user.name} authenticated for store ${user.storeId}`);
+        console.log(`User ${user.name} authenticated (ruta: ${user.rutaId})`);
         router.replace('/(tabs)/timecontrol');
       } else {
         // User is not authenticated, redirect to login
