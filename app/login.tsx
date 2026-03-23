@@ -219,12 +219,9 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
+    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
     elevation: 5,
   },
   input: {
@@ -245,10 +242,7 @@ const styles = StyleSheet.create({
   },
   loginButtonActive: {
     backgroundColor: '#667eea',
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    boxShadow: '0px 4px 8px rgba(102, 126, 234, 0.3)',
     elevation: 6,
   },
   loginButtonText: {

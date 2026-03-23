@@ -139,10 +139,7 @@ const styles = StyleSheet.create({
     width: width * 0.85,
     maxWidth: 350,
     elevation: 15,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 15,
+    boxShadow: "0px 8px 15px rgba(0, 0, 0, 0.3)",
     borderTopWidth: 5,
   },
   content: {
