@@ -138,22 +138,27 @@ export default function TimeControlScreen() {
     try {
       const festivos = await apiService.getFestivos(user?.rutaId);
       const hoy = new Date();
+      let hayFestivoExtra = false;
+      let hayFinDeSemana = false;
       for (let i = 1; i <= 7; i++) {
         const siguiente = new Date(hoy);
         siguiente.setDate(hoy.getDate() + i);
 
         const diaSemana = siguiente.getDay();
-        if (diaSemana === 0 || diaSemana === 6) continue;
-        const fechaStr = siguiente.toISOString().split("T")[0];
-        if (festivos[fechaStr]) continue;
-        if (i === 1) {
-          return t.nosVemosMañana;
+        if (diaSemana === 0 || diaSemana === 6) {
+          hayFinDeSemana = true;
+          continue;
         }
-        return t.felizFestivo(nombreEmpleadoActual);
+        const fechaStr = siguiente.toISOString().split("T")[0];
+        if (festivos[fechaStr]) {
+          hayFestivoExtra = true;
+          continue;
+        }
+        return { mensaje: hayFestivoExtra ? t.felizFestivo(nombreEmpleadoActual) : "", hayFinDeSemana };
       }
-      return "";
+      return { mensaje: "", hayFinDeSemana };
     } catch {
-      return "";
+      return { mensaje: "", hayFinDeSemana: false };
     }
   };
 
@@ -216,12 +221,10 @@ export default function TimeControlScreen() {
           if (exitType === "DESCANSO") {
             triggerFeedback("☕", "¡Hasta ahora!", "Disfruta de tu descanso", "#FF9800");
           } else {
-            const hoy = new Date();
-            const esViernes = hoy.getDay() === 5;
-            const titulo = esViernes ? "¡Feliz fin de semana!" : "Turno completado";
-            const mensaje = await calcularMensajeDespedida(nombreActual);
-            
-            triggerFeedback("🏁", titulo, mensaje || `¡Que descanses bien, ${nombreActual}!`, "#9C27B0");
+            const resultado = await calcularMensajeDespedida(nombreActual);
+            const titulo = resultado.hayFinDeSemana ? t.buenFinDeSemana : "Turno completado";
+
+            triggerFeedback("🏁", titulo, resultado.mensaje || `¡Que descanses bien, ${nombreActual}!`, "#9C27B0");
           }
         } else {
           const msg = response.message || "";
