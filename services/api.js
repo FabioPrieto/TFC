@@ -40,14 +40,14 @@ class ApiService {
     }
   }
 
-  // Autenticación de la tienda con nombre y contraseña de admin
-  async authenticateStore(storeName, adminPassword) {
+  // Autenticación de la tienda con email y contraseña de admin
+  async authenticateStore(storeEmail, adminPassword) {
     try {
       const response = await this.makeRequest('/FuncionesBD.php', {
         method: 'POST',
         body: JSON.stringify({
           tipo_operacion: 'authenticate_store',
-          store_name: storeName,
+          store_email: storeEmail,
           admin_password: adminPassword
         })
       });

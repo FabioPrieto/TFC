@@ -184,7 +184,7 @@ export default function TimeControlScreen() {
   const handlePinConfirm = async (pin: string, exitType?: "DESCANSO" | "FIN_TURNO") => {
     setShowPinModal(false);
     if (modalType === "AJUSTES") {
-      const response = await apiService.authenticateStore(user?.name, pin);
+      const response = await apiService.authenticateStore(user?.email, pin);
       if (response.success) {
         setShowSettingsModal(true);
       } else {

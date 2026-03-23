@@ -5,13 +5,14 @@ import { apiService } from '../../services/api';
 interface User {
   id: string;
   name: string;
+  email: string;
   rutaId: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (storeName: string, adminPassword: string) => Promise<boolean>;
+  login: (storeEmail: string, adminPassword: string) => Promise<boolean>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
@@ -44,7 +45,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (userData) {
         const parsedUser = JSON.parse(userData);
         // Verify the stored user data is still valid
-        if (parsedUser.id && parsedUser.name && parsedUser.rutaId) {
+        if (parsedUser.id && parsedUser.name && parsedUser.email && parsedUser.rutaId) {
           setUser(parsedUser);
         } else {
           // Clear invalid user data
@@ -59,17 +60,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const login = async (storeName: string, adminPassword: string): Promise<boolean> => {
+  const login = async (storeEmail: string, adminPassword: string): Promise<boolean> => {
     try {
       setIsLoading(true);
-      
-      // Call API to authenticate with ST_Name and ST_AdminPassword
-      const response = await apiService.authenticateStore(storeName, adminPassword);
-      
+
+      // Call API to authenticate with ST_Email and ST_AdminPassword
+      const response = await apiService.authenticateStore(storeEmail, adminPassword);
+
       if (response.success && response.store) {
         const userData: User = {
           id: response.store.ST_ID.toString(),
           name: response.store.ST_Name,
+          email: response.store.ST_Email,
           rutaId: response.store.ruta_id.toString(),
         };
         

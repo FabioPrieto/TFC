@@ -29,7 +29,7 @@ export default function LoginScreen() {
   const scale = Math.min(width / 1024, 1);
   const responsivo = (minimo: number, ideal: number) => Math.max(minimo, ideal * scale);
 
-  const [storeName, setStoreName] = useState('');
+  const [storeEmail, setStoreEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [errorModal, setErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -58,8 +58,8 @@ export default function LoginScreen() {
 
   // Valida los campos y autentica la tienda contra el servidor
   const handleLogin = async () => {
-    if (!storeName.trim()) {
-      setErrorMessage(t.errorCampoTienda);
+    if (!storeEmail.trim()) {
+      setErrorMessage(t.errorCampoEmail);
       setErrorModal(true);
       return;
     }
@@ -71,7 +71,7 @@ export default function LoginScreen() {
     }
 
     try {
-      const success = await login(storeName.trim(), adminPassword);
+      const success = await login(storeEmail.trim(), adminPassword);
       if (success) {
         router.replace('/(tabs)/timecontrol');
       } else {
@@ -119,12 +119,13 @@ export default function LoginScreen() {
               <View style={[styles.inputContainer, { padding: responsivo(35, 65) }]}>
                 <TextInput
                   style={[styles.input, { paddingVertical: responsivo(20, 45), fontSize: responsivo(18, 28), marginBottom: responsivo(25, 45) }]}
-                  placeholder={t.nombreTienda}
+                  placeholder={t.emailTienda}
                   placeholderTextColor="#999"
-                  value={storeName}
-                  onChangeText={setStoreName}
+                  value={storeEmail}
+                  onChangeText={setStoreEmail}
                   autoCapitalize="none"
                   autoCorrect={false}
+                  keyboardType="email-address"
                 />
                 
                 <TextInput
@@ -146,10 +147,10 @@ export default function LoginScreen() {
                       paddingVertical: responsivo(40, 50), 
                       marginTop: responsivo(40, 100) 
                     },
-                    (storeName.trim() && adminPassword.trim()) ? styles.loginButtonActive : styles.loginButtonDisabled
+                    (storeEmail.trim() && adminPassword.trim()) ? styles.loginButtonActive : styles.loginButtonDisabled
                   ]}
                   onPress={handleLogin}
-                  disabled={!storeName.trim() || !adminPassword.trim()}
+                  disabled={!storeEmail.trim() || !adminPassword.trim()}
                 >
                   <Text style={[styles.loginButtonText, { fontSize: responsivo(30, 50) }]}>{t.iniciarSesion}</Text>
               </TouchableOpacity>
