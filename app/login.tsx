@@ -1,7 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useState, useEffect } from 'react';
 import {
-  Alert,
   ImageBackground,
   KeyboardAvoidingView,
   Platform,
@@ -18,6 +17,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LoadingSpinner from '../components/LoadingSpinner';
+import ConfirmationModal from '../components/ConfirmationModal';
 import { useAuth } from './context/AuthContext';
 import { translations, type Language } from '../i18n/translations';
 
@@ -31,6 +31,8 @@ export default function LoginScreen() {
 
   const [storeName, setStoreName] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
+  const [errorModal, setErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Estado para el idioma actual (se lee de AsyncStorage, por defecto español)
   const [language, setLanguage] = useState<Language>("es");
@@ -57,12 +59,14 @@ export default function LoginScreen() {
   // Valida los campos y autentica la tienda contra el servidor
   const handleLogin = async () => {
     if (!storeName.trim()) {
-      Alert.alert('Error', t.errorCampoTienda);
+      setErrorMessage(t.errorCampoTienda);
+      setErrorModal(true);
       return;
     }
 
     if (!adminPassword.trim()) {
-      Alert.alert('Error', t.errorCampoContrasena);
+      setErrorMessage(t.errorCampoContrasena);
+      setErrorModal(true);
       return;
     }
 
@@ -71,11 +75,13 @@ export default function LoginScreen() {
       if (success) {
         router.replace('/(tabs)/timecontrol');
       } else {
-        Alert.alert('Error', t.errorCredenciales);
+        setErrorMessage(t.errorCredenciales);
+        setErrorModal(true);
         setAdminPassword('');
       }
     } catch (error) {
-      Alert.alert('Error', t.errorLogin);
+      setErrorMessage(t.errorLogin);
+      setErrorModal(true);
       setAdminPassword('');
     }
   };
@@ -169,6 +175,13 @@ export default function LoginScreen() {
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
+      <ConfirmationModal
+        visible={errorModal}
+        onClose={() => setErrorModal(false)}
+        type="ERROR"
+        isSuccess={false}
+        extraMessage={errorMessage}
+      />
     </ImageBackground>
   );
 }

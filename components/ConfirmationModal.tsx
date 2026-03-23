@@ -1,9 +1,10 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
 import {
     Dimensions,
     Modal,
     StyleSheet,
     Text,
+    TouchableWithoutFeedback,
     View,
 } from "react-native";
 import { ThemeColors, type AppTheme } from "../constants/Colors";
@@ -30,6 +31,14 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   theme = "claro",
 }) => {
   const colors = ThemeColors[theme];
+
+  // Auto-cerrar después de 3 segundos
+  useEffect(() => {
+    if (visible) {
+      const timer = setTimeout(onClose, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [visible]);
 
   // Memorizar el mensaje para que no cambie en cada render
   const message = useMemo(() => {
@@ -97,18 +106,20 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       animationType="fade"
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
-        <View style={[styles.modalContainer, { backgroundColor: colors.modalBg, borderTopColor: getModalColor() }]}>
-          <View style={styles.content}>
-            <Text style={[styles.message, { color: getModalColor() }]}>
-              {message}
-            </Text>
-            {extraMessage ? (
-              <Text style={[styles.extraMessage, { color: colors.modalExtraText }]}>{extraMessage}</Text>
-            ) : null}
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.overlay}>
+          <View style={[styles.modalContainer, { backgroundColor: colors.modalBg, borderTopColor: getModalColor() }]}>
+            <View style={styles.content}>
+              <Text style={[styles.message, { color: getModalColor() }]}>
+                {message}
+              </Text>
+              {extraMessage ? (
+                <Text style={[styles.extraMessage, { color: colors.modalExtraText }]}>{extraMessage}</Text>
+              ) : null}
+            </View>
           </View>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };
