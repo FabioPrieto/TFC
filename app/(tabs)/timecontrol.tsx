@@ -188,7 +188,7 @@ export default function TimeControlScreen() {
       if (response.success) {
         setShowSettingsModal(true);
       } else {
-        triggerFeedback("❌", "Error", "PIN de Ajustes incorrecto", "#f44336");
+        triggerFeedback("❌", "Error", t.errorContrasenaAdmin, "#f44336");
       }
       return;
     }

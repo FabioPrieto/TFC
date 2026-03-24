@@ -41,6 +41,7 @@ export const translations: Record<Language, Record<string, any>> = {
     salidaDescanso: "Salida por Descanso",
     finTurno: "Fin de Turno",
     volver: "Volver",
+    errorContrasenaAdmin: "Contraseña de administrador incorrecta",
     // ConfirmationModal
     continuar: "Continuar",
     errorMessages: [
@@ -125,6 +126,7 @@ export const translations: Record<Language, Record<string, any>> = {
     salidaDescanso: "Sortida per Descans",
     finTurno: "Fi de Torn",
     volver: "Tornar",
+    errorContrasenaAdmin: "Contrasenya d'administrador incorrecta",
     continuar: "Continuar",
     errorMessages: [
       "No s'ha pogut registrar l'acció",
@@ -212,6 +214,7 @@ export const translations: Record<Language, Record<string, any>> = {
     salidaDescanso: "Atsedenerako Irteera",
     finTurno: "Txanda Amaiera",
     volver: "Itzuli",
+    errorContrasenaAdmin: "Administratzailearen pasahitza okerra",
     continuar: "Jarraitu",
     errorMessages: [
       "Ezin izan da ekintza erregistratu",
@@ -300,6 +303,7 @@ export const translations: Record<Language, Record<string, any>> = {
     salidaDescanso: "Saída por Descanso",
     finTurno: "Fin de Quenda",
     volver: "Volver",
+    errorContrasenaAdmin: "Contrasinal de administrador incorrecto",
     continuar: "Continuar",
     errorMessages: [
       "Non se puido rexistrar a acción",
@@ -385,6 +389,7 @@ export const translations: Record<Language, Record<string, any>> = {
     salidaDescanso: "Break",
     finTurno: "End of Shift",
     volver: "Back",
+    errorContrasenaAdmin: "Incorrect administrator password",
     continuar: "Continue",
     errorMessages: [
       "Oops! Could not register the action",

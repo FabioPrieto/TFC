@@ -59,24 +59,6 @@ class ApiService {
     }
   }
 
-  // Autenticación de usuario por PIN
-  async authenticateUser(pin) {
-    try {
-      const response = await this.makeRequest('/app.php', {
-        method: 'POST',
-        body: JSON.stringify({
-          tipo_operacion: 'authenticate',
-          pin: pin
-        })
-      });
-
-      return response;
-    } catch (error) {
-      console.error('Error al autenticar usuario:', error);
-      return { success: false, message: 'Error al autenticar' };
-    }
-  }
-
   async clockIn(userId, storeId, pin) {
     try {
       const response = await this.makeRequest('/app.php', {
@@ -222,24 +204,6 @@ class ApiService {
       return { success: false, language: 'es' };
     }
   }
-
-  // Método de conexión de prueba
-  async testConnection() {
-    try {
-      const response = await this.makeRequest('/app.php', {
-        method: 'POST',
-        body: JSON.stringify({
-          tipo_operacion: 'test'
-        })
-      });
-
-      return response;
-    } catch (error) {
-      console.error('Error en la prueba de conexión:', error);
-      return { success: false, message: 'Error en la prueba de conexión' };
-    }
-  }
-
 
 }
 
