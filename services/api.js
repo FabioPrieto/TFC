@@ -43,7 +43,7 @@ class ApiService {
   // Autenticación de la tienda con email y contraseña de admin
   async authenticateStore(storeEmail, adminPassword) {
     try {
-      const response = await this.makeRequest('/FuncionesBD.php', {
+      const response = await this.makeRequest('/app.php', {
         method: 'POST',
         body: JSON.stringify({
           tipo_operacion: 'authenticate_store',
@@ -62,7 +62,7 @@ class ApiService {
   // Autenticación de usuario por PIN
   async authenticateUser(pin) {
     try {
-      const response = await this.makeRequest('/FuncionesBD.php', {
+      const response = await this.makeRequest('/app.php', {
         method: 'POST',
         body: JSON.stringify({
           tipo_operacion: 'authenticate',
@@ -79,7 +79,7 @@ class ApiService {
 
   async clockIn(userId, storeId, pin) {
     try {
-      const response = await this.makeRequest('/FuncionesBD.php', {
+      const response = await this.makeRequest('/app.php', {
         method: 'POST',
         body: JSON.stringify({
           tipo_operacion: 'fichar_entrada',
@@ -99,7 +99,7 @@ class ApiService {
 
   async clockOut(userId, storeId, pin, exitType = 'FIN_TURNO') {
     try {
-      const response = await this.makeRequest('/FuncionesBD.php', {
+      const response = await this.makeRequest('/app.php', {
         method: 'POST',
         body: JSON.stringify({
           tipo_operacion: 'fichar_salida',
@@ -120,7 +120,7 @@ class ApiService {
 
   async getTimeRecords(userId, storeId) {
     try {
-      const response = await this.makeRequest('/FuncionesBD.php', {
+      const response = await this.makeRequest('/app.php', {
         method: 'POST',
         body: JSON.stringify({
           tipo_operacion: 'get_fichajes_usuario',
@@ -138,7 +138,7 @@ class ApiService {
 
   async getFestivos(storeId) {
     try {
-      const response = await this.makeRequest('/FuncionesBD.php', {
+      const response = await this.makeRequest('/app.php', {
         method: 'POST',
         body: JSON.stringify({
           tipo_operacion: 'get_festivos',
@@ -156,7 +156,7 @@ class ApiService {
   // Guarda el tema de la tienda en la base de datos
   async updateTheme(storeId, theme) {
     try {
-      const response = await this.makeRequest('/FuncionesBD.php', {
+      const response = await this.makeRequest('/app.php', {
         method: 'POST',
         body: JSON.stringify({
           tipo_operacion: 'update_theme',
@@ -174,7 +174,7 @@ class ApiService {
   // Obtiene el tema guardado de la tienda en la base de datos
   async getTheme(storeId) {
     try {
-      const response = await this.makeRequest('/FuncionesBD.php', {
+      const response = await this.makeRequest('/app.php', {
         method: 'POST',
         body: JSON.stringify({
           tipo_operacion: 'get_theme',
@@ -191,7 +191,7 @@ class ApiService {
   // Guarda el idioma de la tienda en la base de datos
   async updateLanguage(storeId, language) {
     try {
-      const response = await this.makeRequest('/FuncionesBD.php', {
+      const response = await this.makeRequest('/app.php', {
         method: 'POST',
         body: JSON.stringify({
           tipo_operacion: 'update_language',
@@ -209,7 +209,7 @@ class ApiService {
   // Obtiene el idioma guardado de la tienda en la base de datos
   async getLanguage(storeId) {
     try {
-      const response = await this.makeRequest('/FuncionesBD.php', {
+      const response = await this.makeRequest('/app.php', {
         method: 'POST',
         body: JSON.stringify({
           tipo_operacion: 'get_language',
@@ -226,7 +226,7 @@ class ApiService {
   // Método de conexión de prueba
   async testConnection() {
     try {
-      const response = await this.makeRequest('/FuncionesBD.php', {
+      const response = await this.makeRequest('/app.php', {
         method: 'POST',
         body: JSON.stringify({
           tipo_operacion: 'test'
