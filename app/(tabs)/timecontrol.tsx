@@ -29,7 +29,8 @@ const logoImageWhite = require("../../assets/images/logo_peluqueria_unida_blanco
 
 export default function TimeControlScreen() {
   const { width } = useWindowDimensions();
-  const scale = Math.min(width / 1024, 1);
+  const effectiveWidth = Platform.OS === 'web' ? Math.min(width, 900) : width;
+  const scale = Math.min(effectiveWidth / 1024, 1);
   const responsivo = (minimo: number, ideal: number) => Math.max(minimo, ideal * scale);
 
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -333,7 +334,7 @@ export default function TimeControlScreen() {
                 </View>
               </View>
 
-              <View style={[styles.content, { marginTop: responsivo(30, 150) }]}>
+              <View style={[styles.content, { marginTop: Platform.OS === 'web' ? 0 : responsivo(30, 150) }]}>
                 <Text style={[styles.dateText, { color: textColor, fontSize: responsivo(18, 40), marginBottom: responsivo(20, 120) }]}>
                   {t.formatoFecha(t.diasSemana[currentTime.getDay()], currentTime.getDate(), t.meses[currentTime.getMonth()])}
                 </Text>
@@ -463,6 +464,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     zIndex: 2,
+    ...(Platform.OS === 'web' ? { maxWidth: 900, width: '100%', alignSelf: 'center' } : {}),
   },
   header: {
     flexDirection: "row",
@@ -586,7 +588,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: "flex-start",
+    justifyContent: Platform.OS === 'web' ? "center" : "flex-start",
     alignItems: "center",
   },
   dateText: {
