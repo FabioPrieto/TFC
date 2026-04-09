@@ -124,7 +124,7 @@ class ApiService {
         method: 'POST',
         body: JSON.stringify({
           tipo_operacion: 'get_festivos',
-          tienda: storeId
+          store_id: storeId
         })
       });
 
