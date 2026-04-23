@@ -29,7 +29,7 @@ const logoImageWhite = require("../../assets/images/logo_peluqueria_unida_blanco
 
 export default function TimeControlScreen() {
   const { width } = useWindowDimensions();
-  const effectiveWidth = Platform.OS === 'web' ? Math.min(width, 900) : width;
+  const effectiveWidth = Platform.OS === 'web' ? Math.min(width, 750) : width;
   const scale = Math.min(effectiveWidth / 1024, 1);
   const responsivo = (minimo: number, ideal: number) => Math.max(minimo, ideal * scale);
 
@@ -59,10 +59,6 @@ export default function TimeControlScreen() {
   const storeNameDisplay = user?.name || "Rocholl";
 
   useEffect(() => {
-    if (Platform.OS === 'web') {
-      const tabList = document.querySelector(".r-pointerEvents-105ug2t");
-      if (tabList) (tabList as HTMLElement).style.display = "none";
-    }
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
@@ -316,15 +312,12 @@ export default function TimeControlScreen() {
               <View style={[styles.header, { backgroundColor: tc.headerBackground, padding: responsivo(10, 15) }]}>
                 
                 <View style={{ flex: 1, alignItems: 'flex-start' }}>
-                   <Text numberOfLines={1} style={{ fontSize: responsivo(16, 24), color: "white", fontWeight: "600" }}>
-                      {employeeName}
-                   </Text>
-                </View>
-
-                <View style={{ flex: 1, alignItems: 'center' }}>
                   <Text numberOfLines={1} style={[styles.storeName, { fontSize: responsivo(18, 28) }]}>
                     {storeNameDisplay}
                   </Text>
+                </View>
+
+                <View style={{ flex: 1, alignItems: 'center' }}>
                 </View>
 
                 <View style={{ flex: 1, alignItems: 'flex-end' }}>
@@ -464,7 +457,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     zIndex: 2,
-    ...(Platform.OS === 'web' ? { maxWidth: 900, width: '100%', alignSelf: 'center' } : {}),
+    ...(Platform.OS === 'web' ? { maxWidth: 1100, width: '100%', alignSelf: 'center', justifyContent: 'space-between' } : {}),
   },
   header: {
     flexDirection: "row",
@@ -587,9 +580,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   content: {
-    flex: 1,
+    flex: Platform.OS === 'web' ? 0 : 1,
     justifyContent: Platform.OS === 'web' ? "center" : "flex-start",
     alignItems: "center",
+    ...(Platform.OS === 'web' ? { width: '100%' } : {}),
   },
   dateText: {
     textTransform: "capitalize",
@@ -625,7 +619,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-end",
     marginTop: "auto",
-    paddingBottom: Platform.OS === "ios" ? 100 : 40, 
+    paddingBottom: Platform.OS === "ios" ? 100 : 40,
+    ...(Platform.OS === 'web' ? { marginTop: 0, paddingBottom: 20 } : {}),
   },
   logo: { 
   },

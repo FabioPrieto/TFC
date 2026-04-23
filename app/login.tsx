@@ -26,7 +26,8 @@ const logoImage = require('../assets/images/logoPeluqueriaUnida.png');
 
 export default function LoginScreen() {
   const { width } = useWindowDimensions();
-  const scale = Math.min(width / 1024, 1);
+  const effectiveWidth = Platform.OS === 'web' ? Math.min(width, 750) : width;
+  const scale = Math.min(effectiveWidth / 1024, 1);
   const responsivo = (minimo: number, ideal: number) => Math.max(minimo, ideal * scale);
 
   const [storeEmail, setStoreEmail] = useState('');
@@ -105,7 +106,7 @@ export default function LoginScreen() {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            <View style={[styles.content, { paddingTop: responsivo(40, 180), maxWidth: responsivo(450, 850) }]}>
+            <View style={[styles.content, { paddingTop: Platform.OS === 'web' ? 40 : responsivo(40, 180), maxWidth: responsivo(450, 850) }]}>
               <Text style={[styles.title, { fontSize: responsivo(40, 60) }]}>{t.loginTitulo}</Text>
 
               <Text style={[styles.subtitle, {
@@ -200,7 +201,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    flex: 1, 
+    flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
     paddingHorizontal: 20,
