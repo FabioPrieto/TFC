@@ -1,7 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useState, useEffect } from 'react';
 import {
-  Alert,
   ImageBackground,
   KeyboardAvoidingView,
   Platform,
@@ -18,6 +17,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LoadingSpinner from '../components/LoadingSpinner';
+import ConfirmationModal from '../components/ConfirmationModal';
 import { useAuth } from './context/AuthContext';
 import { translations, type Language } from '../i18n/translations';
 
@@ -26,11 +26,14 @@ const logoImage = require('../assets/images/logoPeluqueriaUnida.png');
 
 export default function LoginScreen() {
   const { width } = useWindowDimensions();
-  const scale = Math.min(width / 1024, 1);
+  const effectiveWidth = Platform.OS === 'web' ? Math.min(width, 750) : width;
+  const scale = Math.min(effectiveWidth / 1024, 1);
   const responsivo = (minimo: number, ideal: number) => Math.max(minimo, ideal * scale);
 
-  const [storeName, setStoreName] = useState('');
+  const [storeEmail, setStoreEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
+  const [errorModal, setErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Estado para el idioma actual (se lee de AsyncStorage, por defecto español)
   const [language, setLanguage] = useState<Language>("es");
@@ -56,26 +59,30 @@ export default function LoginScreen() {
 
   // Valida los campos y autentica la tienda contra el servidor
   const handleLogin = async () => {
-    if (!storeName.trim()) {
-      Alert.alert('Error', t.errorCampoTienda);
+    if (!storeEmail.trim()) {
+      setErrorMessage(t.errorCampoEmail);
+      setErrorModal(true);
       return;
     }
 
     if (!adminPassword.trim()) {
-      Alert.alert('Error', t.errorCampoContrasena);
+      setErrorMessage(t.errorCampoContrasena);
+      setErrorModal(true);
       return;
     }
 
     try {
-      const success = await login(storeName.trim(), adminPassword);
+      const success = await login(storeEmail.trim(), adminPassword);
       if (success) {
         router.replace('/(tabs)/timecontrol');
       } else {
-        Alert.alert('Error', t.errorCredenciales);
+        setErrorMessage(t.errorCredenciales);
+        setErrorModal(true);
         setAdminPassword('');
       }
     } catch (error) {
-      Alert.alert('Error', t.errorLogin);
+      setErrorMessage(t.errorLogin);
+      setErrorModal(true);
       setAdminPassword('');
     }
   };
@@ -99,7 +106,7 @@ export default function LoginScreen() {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            <View style={[styles.content, { paddingTop: responsivo(40, 180), maxWidth: responsivo(450, 850) }]}>
+            <View style={[styles.content, { paddingTop: Platform.OS === 'web' ? 40 : responsivo(40, 180), maxWidth: responsivo(450, 850) }]}>
               <Text style={[styles.title, { fontSize: responsivo(40, 60) }]}>{t.loginTitulo}</Text>
 
               <Text style={[styles.subtitle, {
@@ -113,12 +120,13 @@ export default function LoginScreen() {
               <View style={[styles.inputContainer, { padding: responsivo(35, 65) }]}>
                 <TextInput
                   style={[styles.input, { paddingVertical: responsivo(20, 45), fontSize: responsivo(18, 28), marginBottom: responsivo(25, 45) }]}
-                  placeholder={t.nombreTienda}
+                  placeholder={t.emailTienda}
                   placeholderTextColor="#999"
-                  value={storeName}
-                  onChangeText={setStoreName}
+                  value={storeEmail}
+                  onChangeText={setStoreEmail}
                   autoCapitalize="none"
                   autoCorrect={false}
+                  keyboardType="email-address"
                 />
                 
                 <TextInput
@@ -140,10 +148,10 @@ export default function LoginScreen() {
                       paddingVertical: responsivo(40, 50), 
                       marginTop: responsivo(40, 100) 
                     },
-                    (storeName.trim() && adminPassword.trim()) ? styles.loginButtonActive : styles.loginButtonDisabled
+                    (storeEmail.trim() && adminPassword.trim()) ? styles.loginButtonActive : styles.loginButtonDisabled
                   ]}
                   onPress={handleLogin}
-                  disabled={!storeName.trim() || !adminPassword.trim()}
+                  disabled={!storeEmail.trim() || !adminPassword.trim()}
                 >
                   <Text style={[styles.loginButtonText, { fontSize: responsivo(30, 50) }]}>{t.iniciarSesion}</Text>
               </TouchableOpacity>
@@ -169,6 +177,13 @@ export default function LoginScreen() {
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
+      <ConfirmationModal
+        visible={errorModal}
+        onClose={() => setErrorModal(false)}
+        type="ERROR"
+        isSuccess={false}
+        extraMessage={errorMessage}
+      />
     </ImageBackground>
   );
 }
@@ -186,7 +201,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    flex: 1, 
+    flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
     paddingHorizontal: 20,
@@ -205,12 +220,9 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
+    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
     elevation: 5,
   },
   input: {
@@ -231,10 +243,7 @@ const styles = StyleSheet.create({
   },
   loginButtonActive: {
     backgroundColor: '#667eea',
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    boxShadow: '0px 4px 8px rgba(102, 126, 234, 0.3)',
     elevation: 6,
   },
   loginButtonText: {

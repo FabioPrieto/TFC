@@ -227,10 +227,7 @@ const styles = StyleSheet.create({
     width: width * 0.9,
     maxWidth: 400,
     elevation: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
+    boxShadow: "0px 5px 10px rgba(0, 0, 0, 0.3)",
   },
   header: {
     flexDirection: "row",
@@ -288,10 +285,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     margin: "1.5%",
     elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    boxShadow: "0px 2px 2px rgba(0, 0, 0, 0.1)",
   },
   emptyKey: {
     width: "30%",
